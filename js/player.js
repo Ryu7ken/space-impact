@@ -389,7 +389,8 @@ class Player {
     }
     
     drawPowerUpIndicators() {
-        let yOffset = 10;
+        // Start y-offset below the game info
+        let yOffset = 40;
         
         // Draw active power-up indicators
         for (const [powerUp, timeLeft] of Object.entries(this.activePowerUps)) {

@@ -521,10 +521,23 @@ class Game {
         this.playerProjectiles.forEach(projectile => projectile.draw(this.ctx));
         this.enemyProjectiles.forEach(projectile => projectile.draw(this.ctx));
         
-        // Draw level info
+        // Draw game info (always visible)
+        this.drawGameInfo();
+    }
+    
+    drawGameInfo() {
+        // Set up text style
+        this.ctx.shadowColor = '#33ff33';
+        this.ctx.shadowBlur = 3;
         this.ctx.fillStyle = '#33ff33';
-        this.ctx.font = '12px Courier New';
+        this.ctx.font = '14px Courier New';
+        this.ctx.textAlign = 'left';
+        
+        // Draw only enemies killed counter at the top
         this.ctx.fillText(`Enemies: ${this.levelManager.enemiesDefeated}/${this.levelManager.enemiesForNextLevel}`, 10, 20);
+        
+        // Reset shadow for other elements
+        this.ctx.shadowBlur = 0;
     }
     
     checkCollision(obj1, obj2) {

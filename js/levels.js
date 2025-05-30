@@ -684,6 +684,10 @@ class LevelManager {
         overlay.appendChild(levelText);
         document.querySelector('.game-container').appendChild(overlay);
         
+        // Store player's current damage before level transition
+        const currentDamage = this.game.player.projectileDamage;
+        console.log("Storing damage before transition:", currentDamage);
+        
         // Fade in
         setTimeout(() => {
             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
@@ -698,6 +702,12 @@ class LevelManager {
             
             // Update level text
             levelText.textContent = `LEVEL ${this.currentLevel}`;
+            
+            // Double-check damage preservation
+            if (this.game.player.projectileDamage !== currentDamage) {
+                console.log("Damage was not preserved, restoring:", currentDamage);
+                this.game.player.projectileDamage = currentDamage;
+            }
         }, 1000);
         
         // Fade out
@@ -717,14 +727,18 @@ class LevelManager {
         console.log("Advancing to level:", this.currentLevel);
         
         if (this.game && this.game.player) {
-            // Store the current lives and score before updating level
+            // Store the current lives, score, and damage before updating level
             const currentLives = this.game.player.lives;
             const currentScore = this.game.player.score;
+            const currentDamage = this.game.player.projectileDamage;
+            const currentPowerUps = {...this.game.player.activePowerUps};
+            
+            console.log("Before level advancement - Damage:", currentDamage, "PowerUps:", currentPowerUps);
             
             // Update player level
             this.game.player.level = this.currentLevel;
             
-            // Ensure lives and score are preserved
+            // Ensure lives, score, and damage are preserved
             // Make sure lives is a valid number
             if (typeof currentLives !== 'number' || isNaN(currentLives) || currentLives < 0) {
                 console.error("Invalid lives value during level advancement:", currentLives);
@@ -735,11 +749,14 @@ class LevelManager {
             
             this.game.player.score = currentScore;
             
+            // Preserve damage power-up
+            this.game.player.projectileDamage = currentDamage;
+            
             // Make player temporarily invulnerable during level transition
             this.game.player.isInvulnerable = true;
             this.game.player.invulnerabilityTime = 180; // 3 seconds at 60fps
             
-            console.log(`Player stats after level advancement: Lives=${this.game.player.lives}, Score=${this.game.player.score}`);
+            console.log(`Player stats after level advancement: Lives=${this.game.player.lives}, Score=${this.game.player.score}, Damage=${this.game.player.projectileDamage}`);
             
             // Update UI immediately
             document.getElementById('lives').textContent = this.game.player.lives;
