@@ -1,0 +1,22 @@
+# Git files
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Node.js dependencies (if you add them in the future)
+node_modules
+npm-debug.log
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db

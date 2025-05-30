@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Impact</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="lives">Lives: <span id="lives">3</span></div>
+            <div class="level">Level: <span id="level">1</span></div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="game-controls">
+            <p>Controls: Arrow keys to move, Space to shoot</p>
+        </div>
+    </div>
+    
+    <div id="startScreen" class="screen">
+        <h1>SPACE IMPACT</h1>
+        <p>The classic Nokia game reimagined</p>
+        <button id="startButton">Start Game</button>
+    </div>
+    
+    <div id="gameOverScreen" class="screen hidden">
+        <h1>GAME OVER</h1>
+        <p>Your score: <span id="finalScore">0</span></p>
+        <button id="restartButton">Play Again</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/sounds.js"></script>
+    <script src="js/powerups.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/projectiles.js"></script>
+    <script src="js/enemies.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
