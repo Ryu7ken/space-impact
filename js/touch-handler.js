@@ -1,29 +1,30 @@
 /**
  * Direct touch handler for Space Impact
  * This implementation directly manipulates the player object
+ * ONLY FOR MOBILE DEVICES
  */
 
 // Wait for the page to fully load
 window.addEventListener('load', function() {
-    // Wait a bit to ensure game is fully initialized
-    setTimeout(function() {
-        setupDirectTouchControls();
-    }, 1000);
+    // Check if we're on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Only set up touch controls on mobile devices
+    if (isMobile) {
+        // Wait a bit to ensure game is fully initialized
+        setTimeout(function() {
+            setupDirectTouchControls();
+        }, 1000);
+    }
 });
 
 function setupDirectTouchControls() {
-    console.log("Setting up direct touch controls");
+    console.log("Setting up direct touch controls for mobile");
     
     const gameCanvas = document.getElementById('gameCanvas');
     if (!gameCanvas) {
         console.error("Game canvas not found");
         return;
-    }
-    
-    // Update the controls text
-    const controlsText = document.getElementById('controlsText');
-    if (controlsText) {
-        controlsText.textContent = 'Touch and drag to move, auto-firing enabled';
     }
     
     // Add touch event listeners directly to the canvas
@@ -56,8 +57,6 @@ function setupDirectTouchControls() {
             
             // Force shooting
             window.game.player.isShooting = true;
-            
-            console.log("Player moved to:", window.game.player.x, window.game.player.y);
         }
     }
     
@@ -66,12 +65,12 @@ function setupDirectTouchControls() {
         e.preventDefault();
     }, { passive: false });
     
-    // Set up continuous auto-firing
+    // Set up continuous auto-firing for mobile only
     setInterval(function() {
         if (window.game && window.game.player && window.game.isRunning) {
             window.game.player.isShooting = true;
         }
     }, 50);
     
-    console.log("Direct touch controls setup complete");
+    console.log("Mobile touch controls setup complete");
 }

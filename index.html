@@ -33,15 +33,33 @@
         document.addEventListener('DOMContentLoaded', function() {
             const rotationMessage = document.getElementById('rotationMessage');
             const startScreen = document.getElementById('startScreen');
+            const controlsText = document.getElementById('controlsText');
             
             // Always hide rotation message by default
             rotationMessage.style.display = 'none';
             
-            // Only show rotation message on mobile in portrait mode
-            if (isMobileDevice() && window.innerHeight > window.innerWidth) {
-                rotationMessage.style.display = 'flex';
-                startScreen.classList.add('hidden');
+            // Set controls text based on device
+            if (isMobileDevice()) {
+                controlsText.textContent = 'Touch and drag to move, auto-firing enabled';
+                
+                // Only show rotation message on mobile in portrait mode
+                if (window.innerHeight > window.innerWidth) {
+                    rotationMessage.style.display = 'flex';
+                    startScreen.classList.add('hidden');
+                } else {
+                    startScreen.classList.remove('hidden');
+                }
+                
+                // Set auto-firing flag for mobile only
+                window.autoFiring = true;
             } else {
+                // Desktop controls text
+                controlsText.textContent = 'Controls: Arrow keys to move, Space to shoot';
+                
+                // Make sure auto-firing is disabled for desktop
+                window.autoFiring = false;
+                
+                // Show start screen
                 startScreen.classList.remove('hidden');
             }
             
@@ -49,11 +67,6 @@
             window.addEventListener('resize', handleOrientationChange);
             window.addEventListener('orientationchange', handleOrientationChange);
             handleOrientationChange();
-            
-            // Set auto-firing flag for mobile
-            if (isMobileDevice()) {
-                window.autoFiring = true;
-            }
         });
     </script>
 </head>
@@ -111,16 +124,17 @@
     <script src="js/player.js"></script>
     <script src="js/levels.js"></script>
     <script src="js/game.js"></script>
-    <script src="js/touch-handler.js"></script>
     
     <script>
         // Store game instance globally for orientation changes
         document.addEventListener('DOMContentLoaded', function() {
             window.game = new Game();
             
-            // Update controls text for mobile
+            // Only load touch handler on mobile devices
             if (isMobileDevice()) {
-                document.getElementById('controlsText').textContent = 'Touch and drag to move, auto-firing enabled';
+                const touchScript = document.createElement('script');
+                touchScript.src = 'js/touch-handler.js';
+                document.body.appendChild(touchScript);
             }
         });
     </script>

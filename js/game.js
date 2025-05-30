@@ -25,6 +25,9 @@ class Game {
         // Game timers
         this.enemySpawnTimer = 0;
         
+        // Animation frame tracking
+        this.animationFrameId = null;
+        
         // UI elements
         this.startScreen = document.getElementById('startScreen');
         this.difficultyScreen = document.getElementById('difficultyScreen');
@@ -44,8 +47,6 @@ class Game {
         
         // Event listeners
         this.setupEventListeners();
-        
-        // Initial setup - don't call showStartScreen here, it's handled by mobile-controls.js
     }
     
     checkIfMobile() {
@@ -149,6 +150,12 @@ class Game {
     startGame() {
         console.log("Starting game with difficulty:", this.difficulty);
         
+        // Cancel any existing animation frame
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        
         // Hide screens
         this.startScreen.classList.add('hidden');
         this.difficultyScreen.classList.add('hidden');
@@ -185,31 +192,35 @@ class Game {
         this.resizeCanvas();
         
         // Start game loop
-        requestAnimationFrame(() => this.gameLoop());
-        
-        // Enable auto-firing on mobile
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isMobile) {
-            // Set auto-firing flag
-            window.autoFiring = true;
-            
-            // Update controls text
-            const controlsText = document.getElementById('controlsText');
-            if (controlsText) {
-                controlsText.textContent = 'Touch and drag to move, auto-firing enabled';
-            }
-        }
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
     
     showGameOverScreen() {
+        // Stop the game
         this.gameOver = true;
         this.isRunning = false;
+        
+        // Cancel any pending animation frames to prevent multiple game loops
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        
+        // Update the final score
         this.finalScoreElement.textContent = this.player.score;
+        
+        // Show the game over screen
         this.gameOverScreen.classList.remove('hidden');
         
         // Play game over sound
         this.soundManager.stopMusic();
         this.soundManager.play('gameOver');
+        
+        // Clean up any remaining game objects
+        this.enemies = [];
+        this.playerProjectiles = [];
+        this.enemyProjectiles = [];
+        this.powerUps = [];
     }
     
     gameLoop() {
@@ -261,16 +272,12 @@ class Game {
                         
                         // Check if it was a boss
                         if (enemy.type === 'boss') {
-                            this.levelManager.bossDestroyed();
+                            this.levelManager.bossDefeated();
                             this.soundManager.play('bossExplode');
                         }
                         
-                        // Check for power-up drop - adjusted by difficulty
-                        let dropChance = 0.2; // Default medium
-                        if (this.difficulty === 'Easy') dropChance = 0.3;
-                        if (this.difficulty === 'Hard') dropChance = 0.1;
-                        
-                        if (Math.random() < dropChance) {
+                        // Chance to drop power-up
+                        if (Math.random() < 0.2) { // 20% chance
                             this.spawnPowerUp(enemy.x, enemy.y);
                         }
                         
@@ -282,6 +289,7 @@ class Game {
                             }
                         }
                         
+                        // Remove enemy
                         this.enemies.splice(j, 1);
                     }
                     
@@ -304,7 +312,7 @@ class Game {
             }
             
             // Check for collision with player
-            if (projectile.collidesWith(this.player)) {
+            if (projectile.collidesWith(this.player) && !this.player.isInvulnerable) {
                 // Player hit
                 if (this.player.hit()) {
                     // Game over
@@ -396,7 +404,7 @@ class Game {
         this.drawGame();
         
         // Continue game loop
-        requestAnimationFrame(() => this.gameLoop());
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
     
     spawnEnemy() {
@@ -469,5 +477,5 @@ class Game {
 
 // Initialize game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new Game();
+    window.game = new Game();
 });
