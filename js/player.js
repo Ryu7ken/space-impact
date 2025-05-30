@@ -486,14 +486,31 @@ class Player {
     hit() {
         // Shield absorbs the hit
         if (this.hasPowerUp('shield')) {
+            console.log("Hit absorbed by shield");
             return false;
         }
         
         if (!this.isInvulnerable) {
+            // Safety check - ensure lives is a valid number
+            if (typeof this.lives !== 'number' || isNaN(this.lives)) {
+                console.error("Invalid lives value:", this.lives);
+                this.lives = 1; // Reset to 1 if invalid
+            }
+            
             this.lives--;
+            console.log(`Player hit! Lives remaining: ${this.lives}`);
             this.isInvulnerable = true;
             this.invulnerabilityTime = this.invulnerabilityTimeMax;
-            return this.lives <= 0;
+            
+            // Update UI immediately
+            document.getElementById('lives').textContent = this.lives;
+            
+            // Only return true (game over) if lives are actually 0 or less
+            if (this.lives <= 0) {
+                console.log("Player out of lives - Game Over");
+                return true;
+            }
+            return false;
         }
         return false;
     }

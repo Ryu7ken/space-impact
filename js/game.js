@@ -196,9 +196,20 @@ class Game {
     }
     
     showGameOverScreen() {
+        // Double-check that player is actually out of lives
+        if (this.player && this.player.lives > 0) {
+            console.log("Prevented false game over - player still has lives:", this.player.lives);
+            return; // Don't show game over if player still has lives
+        }
+        
         // Stop the game
         this.gameOver = true;
         this.isRunning = false;
+        
+        console.log("Game Over Screen shown");
+        console.log("Player lives:", this.player ? this.player.lives : "unknown");
+        console.log("Player score:", this.player ? this.player.score : "unknown");
+        console.log("Current level:", this.levelManager ? this.levelManager.currentLevel : "unknown");
         
         // Cancel any pending animation frames to prevent multiple game loops
         if (this.animationFrameId) {
@@ -246,86 +257,168 @@ class Game {
             this.soundManager.play('playerShoot');
         }
         
-        // Update player projectiles
-        for (let i = this.playerProjectiles.length - 1; i >= 0; i--) {
-            const projectile = this.playerProjectiles[i];
-            projectile.update();
-            
-            // Remove off-screen projectiles
-            if (projectile.isOffScreen(this.canvas.width)) {
-                this.playerProjectiles.splice(i, 1);
-                continue;
+        // Skip collision detection if level is transitioning
+        const isLevelTransitioning = this.levelManager.bossDefeated;
+        
+        if (!isLevelTransitioning) {
+            // Update player projectiles
+            for (let i = this.playerProjectiles.length - 1; i >= 0; i--) {
+                const projectile = this.playerProjectiles[i];
+                projectile.update();
+                
+                // Remove off-screen projectiles
+                if (projectile.isOffScreen(this.canvas.width)) {
+                    this.playerProjectiles.splice(i, 1);
+                    continue;
+                }
+                
+                // Check for collisions with enemies
+                for (let j = this.enemies.length - 1; j >= 0; j--) {
+                    const enemy = this.enemies[j];
+                    if (projectile.collidesWith(enemy)) {
+                        // Enemy hit
+                        if (enemy.hit(projectile.damage)) {
+                            // Enemy destroyed
+                            this.player.addScore(enemy.points);
+                            this.levelManager.enemyDefeated();
+                            
+                            // Play explosion sound
+                            this.soundManager.play('explosion');
+                            
+                            // Check if it was a boss
+                            if (enemy.type === 'boss') {
+                                console.log("Boss killed! Calling bossDestroyed()");
+                                // Don't remove the boss yet - let the level transition happen first
+                                this.levelManager.bossDestroyed();
+                                this.soundManager.play('bossExplode');
+                                // Skip removing the boss from the array to prevent further collisions
+                                continue;
+                            }
+                            
+                            // Chance to drop power-up
+                            if (Math.random() < 0.2) { // 20% chance
+                                this.spawnPowerUp(enemy.x, enemy.y);
+                            }
+                            
+                            // Check for splitter enemy
+                            if (enemy.type === 'splitter') {
+                                const smallerEnemies = enemy.split();
+                                if (smallerEnemies) {
+                                    this.enemies.push(...smallerEnemies);
+                                }
+                            }
+                            
+                            // Remove enemy
+                            this.enemies.splice(j, 1);
+                        }
+                        
+                        // Remove projectile
+                        this.playerProjectiles.splice(i, 1);
+                        break;
+                    }
+                }
             }
             
-            // Check for collisions with enemies
-            for (let j = this.enemies.length - 1; j >= 0; j--) {
-                const enemy = this.enemies[j];
-                if (projectile.collidesWith(enemy)) {
-                    // Enemy hit
-                    if (enemy.hit(projectile.damage)) {
-                        // Enemy destroyed
-                        this.player.addScore(enemy.points);
-                        this.levelManager.enemyDefeated();
-                        
-                        // Play explosion sound
-                        this.soundManager.play('explosion');
-                        
-                        // Check if it was a boss
-                        if (enemy.type === 'boss') {
-                            this.levelManager.bossDefeated();
-                            this.soundManager.play('bossExplode');
+            // Update enemy projectiles
+            for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
+                const projectile = this.enemyProjectiles[i];
+                projectile.update();
+                
+                // Remove off-screen projectiles
+                if (projectile.isOffScreen(this.canvas.width)) {
+                    this.enemyProjectiles.splice(i, 1);
+                    continue;
+                }
+                
+                // Check for collision with player
+                if (projectile.collidesWith(this.player) && !this.player.isInvulnerable) {
+                    // Skip collision if player is in level transition
+                    if (this.levelManager.bossDefeated) {
+                        continue;
+                    }
+                    
+                    // Player hit
+                    const isGameOver = this.player.hit();
+                    if (isGameOver) {
+                        // Double-check lives to prevent false game over
+                        if (this.player.lives <= 0) {
+                            console.log("Game over triggered by enemy projectile hit");
+                            this.showGameOverScreen();
+                            return;
+                        } else {
+                            console.log("Prevented false game over - player still has lives:", this.player.lives);
                         }
-                        
-                        // Chance to drop power-up
-                        if (Math.random() < 0.2) { // 20% chance
-                            this.spawnPowerUp(enemy.x, enemy.y);
-                        }
-                        
-                        // Check for splitter enemy
-                        if (enemy.type === 'splitter') {
-                            const smallerEnemies = enemy.split();
-                            if (smallerEnemies) {
-                                this.enemies.push(...smallerEnemies);
-                            }
-                        }
-                        
-                        // Remove enemy
-                        this.enemies.splice(j, 1);
+                    } else {
+                        // Player was hit but not killed
+                        this.soundManager.play('playerHit');
                     }
                     
                     // Remove projectile
-                    this.playerProjectiles.splice(i, 1);
-                    break;
+                    this.enemyProjectiles.splice(i, 1);
                 }
             }
-        }
-        
-        // Update enemy projectiles
-        for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
-            const projectile = this.enemyProjectiles[i];
-            projectile.update();
             
-            // Remove off-screen projectiles
-            if (projectile.isOffScreen(this.canvas.width)) {
-                this.enemyProjectiles.splice(i, 1);
-                continue;
-            }
-            
-            // Check for collision with player
-            if (projectile.collidesWith(this.player) && !this.player.isInvulnerable) {
-                // Player hit
-                if (this.player.hit()) {
-                    // Game over
-                    this.showGameOverScreen();
-                    return;
-                } else {
-                    // Player was hit but not killed
-                    this.soundManager.play('playerHit');
+            // Update enemies
+            for (let i = this.enemies.length - 1; i >= 0; i--) {
+                const enemy = this.enemies[i];
+                const action = enemy.update();
+                
+                // Handle special enemy actions
+                if (action === 'bomb') {
+                    this.enemyProjectiles.push(enemy.shoot());
                 }
                 
-                // Remove projectile
-                this.enemyProjectiles.splice(i, 1);
+                // Remove off-screen enemies
+                if (enemy.isOffScreen()) {
+                    this.enemies.splice(i, 1);
+                    continue;
+                }
+                
+                // Check for collision with player
+                if (this.checkCollision(enemy, this.player)) {
+                    // Skip collision if player is in level transition
+                    if (this.levelManager.bossDefeated) {
+                        continue;
+                    }
+                    
+                    // Player hit
+                    const isGameOver = this.player.hit();
+                    if (isGameOver) {
+                        // Double-check lives to prevent false game over
+                        if (this.player.lives <= 0) {
+                            console.log("Game over triggered by enemy collision");
+                            this.showGameOverScreen();
+                            return;
+                        } else {
+                            console.log("Prevented false game over - player still has lives:", this.player.lives);
+                        }
+                    } else {
+                        // Player was hit but not killed
+                        this.soundManager.play('playerHit');
+                    }
+                    
+                    // Remove enemy
+                    this.enemies.splice(i, 1);
+                    continue;
+                }
+                
+                // Enemy shooting - adjusted by difficulty
+                let shootChance = enemy.getShootChance();
+                if (this.difficulty === 'Easy') shootChance *= 0.7;
+                if (this.difficulty === 'Hard') shootChance *= 1.3;
+                
+                if (Math.random() < shootChance) {
+                    this.enemyProjectiles.push(enemy.shoot());
+                    this.soundManager.play('enemyShoot');
+                }
             }
+        } else {
+            // During level transition, still update player projectiles and power-ups
+            // but don't check for collisions
+            this.playerProjectiles.forEach(projectile => projectile.update());
+            
+            // Remove off-screen projectiles
+            this.playerProjectiles = this.playerProjectiles.filter(p => !p.isOffScreen(this.canvas.width));
         }
         
         // Update power-ups
@@ -349,53 +442,9 @@ class Game {
             }
         }
         
-        // Update enemies
-        for (let i = this.enemies.length - 1; i >= 0; i--) {
-            const enemy = this.enemies[i];
-            const action = enemy.update();
-            
-            // Handle special enemy actions
-            if (action === 'bomb') {
-                this.enemyProjectiles.push(enemy.shoot());
-            }
-            
-            // Remove off-screen enemies
-            if (enemy.isOffScreen()) {
-                this.enemies.splice(i, 1);
-                continue;
-            }
-            
-            // Check for collision with player
-            if (this.checkCollision(enemy, this.player)) {
-                // Player hit
-                if (this.player.hit()) {
-                    // Game over
-                    this.showGameOverScreen();
-                    return;
-                } else {
-                    // Player was hit but not killed
-                    this.soundManager.play('playerHit');
-                }
-                
-                // Remove enemy
-                this.enemies.splice(i, 1);
-                continue;
-            }
-            
-            // Enemy shooting - adjusted by difficulty
-            let shootChance = enemy.getShootChance();
-            if (this.difficulty === 'Easy') shootChance *= 0.7;
-            if (this.difficulty === 'Hard') shootChance *= 1.3;
-            
-            if (Math.random() < shootChance) {
-                this.enemyProjectiles.push(enemy.shoot());
-                this.soundManager.play('enemyShoot');
-            }
-        }
-        
         // Spawn enemies
         this.enemySpawnTimer--;
-        if (this.enemySpawnTimer <= 0 && !this.levelManager.bossSpawned) {
+        if (this.enemySpawnTimer <= 0 && !this.levelManager.bossSpawned && !this.levelManager.bossDefeated) {
             this.spawnEnemy();
             this.enemySpawnTimer = this.levelManager.getEnemySpawnRate();
         }
@@ -403,20 +452,26 @@ class Game {
         // Draw everything
         this.drawGame();
         
-        // Continue game loop
-        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        // Continue game loop if game is still running
+        if (this.isRunning) {
+            this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        }
     }
     
     spawnEnemy() {
         try {
+            // Don't spawn regular enemies if boss is active
+            if (this.levelManager.bossSpawned) {
+                console.log("Boss is active, skipping regular enemy spawn");
+                return;
+            }
+            
             console.log("Spawning enemy...");
-            console.log("Enemy class exists:", typeof Enemy !== 'undefined');
             
             const enemyType = this.levelManager.getEnemyType();
             console.log("Enemy type:", enemyType);
             
             const newEnemy = new Enemy(this.canvas, enemyType, this.levelManager.currentLevel, this.difficulty);
-            console.log("Enemy created:", newEnemy);
             
             this.enemies.push(newEnemy);
         } catch (error) {
@@ -427,7 +482,14 @@ class Game {
     spawnPowerUp(x, y) {
         // Select random power-up type
         const types = ['shield', 'rapidFire', 'doubleDamage', 'extraLife', 'bomb'];
-        const randomType = types[Math.floor(Math.random() * types.length)];
+        let randomType = types[Math.floor(Math.random() * types.length)];
+        
+        // Don't spawn bomb power-up if boss is active
+        if (randomType === 'bomb' && this.levelManager.bossSpawned) {
+            console.log("Boss active, replacing bomb power-up with another type");
+            const otherTypes = types.filter(type => type !== 'bomb');
+            randomType = otherTypes[Math.floor(Math.random() * otherTypes.length)];
+        }
         
         // Adjust extra life probability based on difficulty
         if (randomType === 'extraLife') {
@@ -435,7 +497,7 @@ class Game {
                                    (this.difficulty === 'Medium' ? 0.5 : 0.3);
             if (Math.random() > extraLifeChance) {
                 // Replace with another power-up
-                const otherTypes = types.filter(type => type !== 'extraLife');
+                const otherTypes = types.filter(type => type !== 'extraLife' && type !== 'bomb');
                 const newType = otherTypes[Math.floor(Math.random() * otherTypes.length)];
                 this.powerUps.push(new PowerUp(x, y, newType));
                 return;

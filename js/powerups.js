@@ -3,8 +3,8 @@ class PowerUp {
         this.x = x;
         this.y = y;
         this.type = type;
-        this.width = 24;
-        this.height = 24;
+        this.width = 28; // Slightly increased from original
+        this.height = 28; // Slightly increased from original
         this.speed = 2;
         this.pulseValue = 0;
         this.pulseDirection = 0.05;
@@ -81,31 +81,31 @@ class PowerUp {
         ctx.translate(centerX, centerY);
         ctx.rotate(this.rotation);
         
-        // Draw based on power-up type with enhanced graphics
+        // Draw based on power-up type with simplified graphics
         switch(this.type) {
             case 'shield':
-                // Shield - bubble shield with hexagonal pattern
-                this.drawShield(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
+                // Shield - simplified shield icon
+                this.drawSimpleShield(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
                 break;
                 
             case 'rapidFire':
-                // Rapid fire - lightning bolt with energy waves
-                this.drawRapidFire(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
+                // Rapid fire - simplified lightning bolt
+                this.drawSimpleRapidFire(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
                 break;
                 
             case 'doubleDamage':
-                // Double damage - explosive star with energy core
-                this.drawDoubleDamage(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
+                // Double damage - simplified star
+                this.drawSimpleDoubleDamage(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
                 break;
                 
             case 'extraLife':
-                // Extra life - detailed heart with pulse effect
-                this.drawExtraLife(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
+                // Extra life - simplified heart
+                this.drawSimpleExtraLife(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
                 break;
                 
             case 'bomb':
-                // Bomb - detailed bomb with fuse and glow
-                this.drawBomb(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
+                // Bomb - simplified bomb
+                this.drawSimpleBomb(-this.width/2, -this.height/2, this.width * pulseSize, ctx);
                 break;
         }
         
@@ -113,67 +113,39 @@ class PowerUp {
         ctx.restore();
     }
     
-    drawShield(x, y, size, ctx) {
-        // Shield shape - hexagonal shield with glowing edges
+    drawSimpleShield(x, y, size, ctx) {
         const radius = size / 2;
         
-        // Outer glow
-        const gradient = ctx.createRadialGradient(0, 0, radius * 0.5, 0, 0, radius);
-        gradient.addColorStop(0, this.color + '80'); // Semi-transparent
-        gradient.addColorStop(0.7, this.color + '40');
-        gradient.addColorStop(1, this.color + '00'); // Transparent
-        
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(0, 0, radius * 1.2, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Shield hexagon
+        // Shield background
         ctx.fillStyle = this.secondaryColor;
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            const pointX = Math.cos(angle) * radius * 0.8;
-            const pointY = Math.sin(angle) * radius * 0.8;
-            
-            if (i === 0) ctx.moveTo(pointX, pointY);
-            else ctx.lineTo(pointX, pointY);
-        }
-        ctx.closePath();
+        ctx.arc(0, 0, radius * 0.8, 0, Math.PI * 2);
         ctx.fill();
         
-        // Inner shield
+        // Shield symbol
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            const pointX = Math.cos(angle) * radius * 0.6;
-            const pointY = Math.sin(angle) * radius * 0.6;
-            
-            if (i === 0) ctx.moveTo(pointX, pointY);
-            else ctx.lineTo(pointX, pointY);
-        }
+        // Draw a shield shape
+        ctx.moveTo(0, -radius * 0.6);
+        ctx.lineTo(radius * 0.6, 0);
+        ctx.lineTo(0, radius * 0.6);
+        ctx.lineTo(-radius * 0.6, 0);
         ctx.closePath();
         ctx.fill();
         
-        // Center symbol
+        // Center dot
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
         ctx.fill();
     }
     
-    drawRapidFire(x, y, size, ctx) {
+    drawSimpleRapidFire(x, y, size, ctx) {
         const width = size;
         const height = size;
         
-        // Background energy field
-        const gradient = ctx.createRadialGradient(0, 0, width * 0.1, 0, 0, width * 0.6);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.3, this.color);
-        gradient.addColorStop(1, this.secondaryColor);
-        
-        ctx.fillStyle = gradient;
+        // Background circle
+        ctx.fillStyle = this.secondaryColor;
         ctx.beginPath();
         ctx.arc(0, 0, width * 0.6, 0, Math.PI * 2);
         ctx.fill();
@@ -190,41 +162,23 @@ class PowerUp {
         ctx.lineTo(-width * 0.15, -height * 0.4);
         ctx.closePath();
         ctx.fill();
-        
-        // Energy waves
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 3; i++) {
-            const waveRadius = (width * 0.7) + (i * width * 0.1);
-            ctx.globalAlpha = 0.7 - (i * 0.2);
-            ctx.beginPath();
-            ctx.arc(0, 0, waveRadius, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
     }
     
-    drawDoubleDamage(x, y, size, ctx) {
+    drawSimpleDoubleDamage(x, y, size, ctx) {
         const radius = size / 2;
         
-        // Explosive background
-        const gradient = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.3, this.color);
-        gradient.addColorStop(0.7, this.secondaryColor);
-        gradient.addColorStop(1, '#330000');
-        
-        ctx.fillStyle = gradient;
+        // Background circle
+        ctx.fillStyle = this.secondaryColor;
         ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.arc(0, 0, radius * 0.8, 0, Math.PI * 2);
         ctx.fill();
         
         // Star shape
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         
-        const outerRadius = radius * 0.9;
-        const innerRadius = radius * 0.4;
+        const outerRadius = radius * 0.7;
+        const innerRadius = radius * 0.3;
         const spikes = 8;
         
         for (let i = 0; i < spikes * 2; i++) {
@@ -240,112 +194,49 @@ class PowerUp {
         ctx.closePath();
         ctx.fill();
         
-        // Center core
+        // Center dot
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(0, 0, radius * 0.25, 0, Math.PI * 2);
+        ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Energy particles
-        for (let i = 0; i < 12; i++) {
-            const particleAngle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * radius * 0.8 + radius * 0.3;
-            const particleX = Math.cos(particleAngle) * distance;
-            const particleY = Math.sin(particleAngle) * distance;
-            const particleSize = Math.random() * radius * 0.15 + radius * 0.05;
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.globalAlpha = Math.random() * 0.5 + 0.5;
-            ctx.beginPath();
-            ctx.arc(particleX, particleY, particleSize, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.globalAlpha = 1;
     }
     
-    drawExtraLife(x, y, size, ctx) {
+    drawSimpleExtraLife(x, y, size, ctx) {
         const width = size;
         const height = size;
         
-        // Heart glow
-        const gradient = ctx.createRadialGradient(0, 0, width * 0.2, 0, 0, width * 0.7);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.5, this.color);
-        gradient.addColorStop(1, this.secondaryColor);
-        
-        ctx.fillStyle = gradient;
+        // Background circle
+        ctx.fillStyle = this.secondaryColor;
         ctx.beginPath();
         ctx.arc(0, 0, width * 0.6, 0, Math.PI * 2);
         ctx.fill();
         
         // Heart shape
         ctx.fillStyle = '#ffffff';
+        
+        // Draw a simple heart
         ctx.beginPath();
-        
-        // Left half of heart
-        ctx.moveTo(0, height * 0.3);
-        ctx.bezierCurveTo(
-            -width * 0.4, -height * 0.3,
-            -width * 0.8, height * 0.1,
-            0, height * 0.5
-        );
-        
-        // Right half of heart
-        ctx.bezierCurveTo(
-            width * 0.8, height * 0.1,
-            width * 0.4, -height * 0.3,
-            0, height * 0.3
-        );
-        
-        ctx.closePath();
-        ctx.fill();
-        
-        // Inner heart
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        
-        // Left half of inner heart
-        ctx.moveTo(0, height * 0.25);
+        ctx.moveTo(0, height * 0.2);
         ctx.bezierCurveTo(
             -width * 0.3, -height * 0.2,
-            -width * 0.6, height * 0.1,
+            -width * 0.5, height * 0.1,
             0, height * 0.4
         );
-        
-        // Right half of inner heart
         ctx.bezierCurveTo(
-            width * 0.6, height * 0.1,
+            width * 0.5, height * 0.1,
             width * 0.3, -height * 0.2,
-            0, height * 0.25
+            0, height * 0.2
         );
-        
         ctx.closePath();
         ctx.fill();
-        
-        // Pulse rings
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 2; i++) {
-            ctx.globalAlpha = 0.7 - (i * 0.3);
-            ctx.beginPath();
-            ctx.arc(0, 0, (width * 0.7) + (i * width * 0.15), 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
     }
     
-    drawBomb(x, y, size, ctx) {
+    drawSimpleBomb(x, y, size, ctx) {
         const width = size;
         const height = size;
         
-        // Bomb glow
-        const gradient = ctx.createRadialGradient(0, 0, width * 0.2, 0, 0, width * 0.7);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.3, this.color);
-        gradient.addColorStop(0.7, this.secondaryColor);
-        gradient.addColorStop(1, '#333300');
-        
-        ctx.fillStyle = gradient;
+        // Background circle
+        ctx.fillStyle = this.secondaryColor;
         ctx.beginPath();
         ctx.arc(0, 0, width * 0.6, 0, Math.PI * 2);
         ctx.fill();
@@ -354,12 +245,6 @@ class PowerUp {
         ctx.fillStyle = '#333333';
         ctx.beginPath();
         ctx.arc(0, width * 0.1, width * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Bomb highlight
-        ctx.fillStyle = '#666666';
-        ctx.beginPath();
-        ctx.arc(width * 0.1, 0, width * 0.15, 0, Math.PI * 2);
         ctx.fill();
         
         // Bomb cap
@@ -373,72 +258,36 @@ class PowerUp {
         ctx.lineWidth = width * 0.08;
         ctx.beginPath();
         ctx.moveTo(0, -width * 0.3);
-        ctx.quadraticCurveTo(width * 0.2, -width * 0.5, width * 0.1, -width * 0.7);
+        ctx.lineTo(0, -width * 0.5);
         ctx.stroke();
         
         // Fuse spark
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(width * 0.1, -width * 0.7, width * 0.1, 0, Math.PI * 2);
+        ctx.arc(0, -width * 0.5, width * 0.1, 0, Math.PI * 2);
         ctx.fill();
         
-        // Spark particles
-        for (let i = 0; i < 5; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * width * 0.15;
-            const sparkX = width * 0.1 + Math.cos(angle) * distance;
-            const sparkY = -width * 0.7 + Math.sin(angle) * distance;
-            const sparkSize = Math.random() * width * 0.05 + width * 0.02;
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.globalAlpha = Math.random() * 0.5 + 0.5;
-            ctx.beginPath();
-            ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-    }
-    
-    drawPixelCircle(ctx, x, y, radius) {
-        // Draw a pixel art circle
+        // Add "No Boss" indicator
+        ctx.strokeStyle = '#ff0000';
+        ctx.lineWidth = width * 0.05;
         ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    drawPixelStar(ctx, x, y, size) {
-        // Draw a pixel art star
-        const outerRadius = size;
-        const innerRadius = size / 2.5;
         
+        // Draw a small boss icon with a cross through it
+        const bossSize = width * 0.2;
+        const bossX = width * 0.3;
+        const bossY = -width * 0.3;
+        
+        // Simple boss shape
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillRect(bossX - bossSize/2, bossY - bossSize/2, bossSize, bossSize);
+        
+        // Red cross over boss
         ctx.beginPath();
-        for (let i = 0; i < 10; i++) {
-            const radius = i % 2 === 0 ? outerRadius : innerRadius;
-            const angle = Math.PI * 2 * i / 10 - Math.PI / 2;
-            const pointX = x + radius * Math.cos(angle);
-            const pointY = y + radius * Math.sin(angle);
-            
-            if (i === 0) {
-                ctx.moveTo(pointX, pointY);
-            } else {
-                ctx.lineTo(pointX, pointY);
-            }
-        }
-        ctx.closePath();
-        ctx.fill();
-    }
-    
-    drawPixelHeart(ctx, x, y, size) {
-        // Draw a pixel art heart
-        const s = size / 8;
-        
-        // Draw heart shape using rectangles
-        ctx.fillRect(x - 6*s, y - 2*s, 4*s, 2*s);
-        ctx.fillRect(x + 2*s, y - 2*s, 4*s, 2*s);
-        ctx.fillRect(x - 8*s, y, 16*s, 2*s);
-        ctx.fillRect(x - 6*s, y + 2*s, 12*s, 2*s);
-        ctx.fillRect(x - 4*s, y + 4*s, 8*s, 2*s);
-        ctx.fillRect(x - 2*s, y + 6*s, 4*s, 2*s);
+        ctx.moveTo(bossX - bossSize/2, bossY - bossSize/2);
+        ctx.lineTo(bossX + bossSize/2, bossY + bossSize/2);
+        ctx.moveTo(bossX + bossSize/2, bossY - bossSize/2);
+        ctx.lineTo(bossX - bossSize/2, bossY + bossSize/2);
+        ctx.stroke();
     }
     
     isOffScreen() {
@@ -448,22 +297,20 @@ class PowerUp {
     applyEffect(player, game) {
         switch(this.type) {
             case 'shield':
-                player.activatePowerUp('shield', this.duration);
+                player.activePowerUps.shield = this.duration;
+                player.isInvulnerable = true;
+                player.invulnerabilityTime = this.duration;
                 game.soundManager.play('powerUp');
                 break;
                 
             case 'rapidFire':
-                player.activatePowerUp('rapidFire', this.duration);
+                player.activePowerUps.rapidFire = this.duration;
                 game.soundManager.play('powerUp');
                 break;
                 
             case 'doubleDamage':
-                // Permanently increase damage
-                player.projectileDamage += 1;
+                player.projectileDamage++;
                 game.soundManager.play('powerUp');
-                
-                // Show temporary effect indicator
-                player.activatePowerUp('doubleDamage', 3 * 60); // 3 second indicator
                 break;
                 
             case 'extraLife':
@@ -472,13 +319,29 @@ class PowerUp {
                 break;
                 
             case 'bomb':
-                // Destroy all enemies on screen
+                // Destroy all enemies on screen except bosses
+                const bosses = [];
                 game.enemies.forEach(enemy => {
-                    player.addScore(enemy.points);
-                    game.levelManager.enemyDefeated();
+                    if (enemy.type === 'boss') {
+                        // Save bosses to re-add later
+                        bosses.push(enemy);
+                    } else {
+                        // Only add score and count defeated for non-boss enemies
+                        player.addScore(enemy.points);
+                        game.levelManager.enemyDefeated();
+                    }
                 });
+                
+                // Clear all enemies and projectiles
                 game.enemies = [];
                 game.enemyProjectiles = [];
+                
+                // Re-add bosses to the enemies array
+                if (bosses.length > 0) {
+                    game.enemies = bosses;
+                    console.log("Bomb used: Boss is immune to bomb effect");
+                }
+                
                 game.soundManager.play('explosion');
                 break;
         }

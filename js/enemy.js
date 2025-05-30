@@ -36,8 +36,8 @@ class Enemy {
     setEnemyProperties() {
         switch(this.type) {
             case 'small':
-                this.width = 25;
-                this.height = 15;
+                this.width = 28; // Slightly increased from original
+                this.height = 18; // Slightly increased from original
                 this.speed = 2 + this.level * 0.2;
                 this.health = 1;
                 this.maxHealth = 1;
@@ -48,8 +48,8 @@ class Enemy {
                 break;
                 
             case 'medium':
-                this.width = 35;
-                this.height = 20;
+                this.width = 38; // Slightly increased from original
+                this.height = 22; // Slightly increased from original
                 this.speed = 1.5 + this.level * 0.15;
                 this.health = 2;
                 this.maxHealth = 2;
@@ -60,8 +60,8 @@ class Enemy {
                 break;
                 
             case 'large':
-                this.width = 50;
-                this.height = 30;
+                this.width = 52; // Slightly increased from original
+                this.height = 32; // Slightly increased from original
                 this.speed = 1 + this.level * 0.1;
                 this.health = 3;
                 this.maxHealth = 3;
@@ -72,8 +72,8 @@ class Enemy {
                 break;
                 
             case 'teleporter':
-                this.width = 30;
-                this.height = 30;
+                this.width = 32; // Slightly increased from original
+                this.height = 32; // Slightly increased from original
                 this.speed = 1.8 + this.level * 0.15;
                 this.health = 2;
                 this.maxHealth = 2;
@@ -84,8 +84,8 @@ class Enemy {
                 break;
                 
             case 'splitter':
-                this.width = 40;
-                this.height = 40;
+                this.width = 42; // Slightly increased from original
+                this.height = 42; // Slightly increased from original
                 this.speed = 1.2 + this.level * 0.1;
                 this.health = 2;
                 this.maxHealth = 2;
@@ -96,8 +96,8 @@ class Enemy {
                 break;
                 
             case 'bomber':
-                this.width = 45;
-                this.height = 25;
+                this.width = 48; // Slightly increased from original
+                this.height = 28; // Slightly increased from original
                 this.speed = 0.8 + this.level * 0.1;
                 this.health = 4;
                 this.maxHealth = 4;
@@ -108,8 +108,8 @@ class Enemy {
                 break;
                 
             case 'boss':
-                this.width = 80;
-                this.height = 50;
+                this.width = 85; // Slightly increased from original
+                this.height = 55; // Slightly increased from original
                 this.speed = 0.5 + this.level * 0.05;
                 this.health = 10 + this.level * 2;
                 this.maxHealth = 10 + this.level * 2;
@@ -155,41 +155,46 @@ class Enemy {
                 break;
                 
             case 1: // Sine wave
-                this.movementCounter += this.movementSpeed;
-                this.y = this.baseY + Math.sin(this.movementCounter) * this.movementAmplitude;
+                this.y = this.baseY + Math.sin(this.movementCounter * this.movementSpeed) * this.movementAmplitude;
+                this.movementCounter++;
                 break;
                 
             case 2: // Zigzag
-                this.movementCounter += this.movementSpeed;
-                this.y = this.baseY + ((this.movementCounter % (2 * Math.PI) > Math.PI) ? 1 : -1) * this.movementAmplitude;
-                break;
-                
-            case 3: // Circle pattern
-                this.movementCounter += this.movementSpeed;
-                this.y = this.baseY + Math.sin(this.movementCounter) * this.movementAmplitude;
-                this.x += Math.cos(this.movementCounter) * 1 - this.speed;
-                break;
-                
-            case 4: // Erratic movement
-                if (Math.random() < 0.05) {
-                    this.baseY = Math.random() * (this.canvas.height - this.height - 20) + 10;
+                if (this.movementCounter % 60 < 30) {
+                    this.y += this.speed * 0.5;
+                } else {
+                    this.y -= this.speed * 0.5;
                 }
-                this.y += (this.baseY - this.y) * 0.05;
+                this.movementCounter++;
+                break;
+                
+            case 3: // Circular
+                this.y = this.baseY + Math.sin(this.movementCounter * this.movementSpeed) * this.movementAmplitude;
+                this.x += Math.cos(this.movementCounter * this.movementSpeed) * this.speed * 0.5;
+                this.movementCounter++;
+                break;
+                
+            case 4: // Erratic
+                if (Math.random() < 0.05) {
+                    this.y += (Math.random() - 0.5) * 10;
+                }
                 break;
         }
         
-        // Handle teleporting for teleporter enemies
+        // Keep enemy within canvas bounds
+        this.y = Math.max(0, Math.min(this.canvas.height - this.height, this.y));
+        
+        // Handle teleporting enemies
         if (this.type === 'teleporter') {
             this.teleportCooldown++;
             if (this.teleportCooldown >= this.teleportCooldownMax) {
                 // Teleport to a new position
                 this.y = Math.random() * (this.canvas.height - this.height - 20) + 10;
-                this.baseY = this.y;
                 this.teleportCooldown = 0;
             }
         }
         
-        // Handle bombing for bomber enemies
+        // Handle bomber enemies
         if (this.type === 'bomber' && Math.random() < 0.01) {
             return 'bomb';
         }
@@ -208,7 +213,7 @@ class Enemy {
         
         switch(this.type) {
             case 'small':
-                // Small enemy - pixel art style triangular ship
+                // Small enemy - simple triangular ship
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
                 this.ctx.lineTo(this.x, this.y);
@@ -216,37 +221,47 @@ class Enemy {
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Details
+                // Simple details
                 this.ctx.fillStyle = '#aa0000';
-                this.ctx.fillRect(this.x + 5, this.y + 5, 5, 5);
+                this.ctx.fillRect(this.x + 5, this.y + this.height/2 - 3, 5, 6);
                 break;
                 
             case 'medium':
-                // Medium enemy - pixel art style rectangular ship
-                this.ctx.fillRect(this.x, this.y + 5, 25, 10);
-                this.ctx.fillRect(this.x + 25, this.y + 7, 10, 6);
+                // Medium enemy - simple rectangular ship
+                this.ctx.fillRect(this.x + 5, this.y + 5, this.width - 10, this.height - 10);
                 
-                // Details
+                // Front point
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width - 10, this.y + 5);
+                this.ctx.lineTo(this.x + this.width - 10, this.y + this.height - 5);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Simple details
                 this.ctx.fillStyle = '#aa5500';
-                this.ctx.fillRect(this.x + 5, this.y + 7, 10, 6);
-                this.ctx.fillRect(this.x + 20, this.y + 8, 5, 4);
+                this.ctx.fillRect(this.x + 10, this.y + this.height/2 - 3, 8, 6);
                 break;
                 
             case 'large':
-                // Large enemy - pixel art style bulky ship
-                this.ctx.fillRect(this.x, this.y + 10, 40, 10);
-                this.ctx.fillRect(this.x + 10, this.y + 5, 30, 20);
-                this.ctx.fillRect(this.x + 40, this.y + 12, 10, 6);
+                // Large enemy - simple bulky ship
+                this.ctx.fillRect(this.x + 10, this.y + 5, this.width - 20, this.height - 10);
                 
-                // Details
+                // Front section
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width - 15, this.y + 5);
+                this.ctx.lineTo(this.x + this.width - 15, this.y + this.height - 5);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Simple details
                 this.ctx.fillStyle = '#aa0066';
-                this.ctx.fillRect(this.x + 20, this.y + 10, 10, 10);
-                this.ctx.fillRect(this.x + 35, this.y + 13, 5, 4);
+                this.ctx.fillRect(this.x + 20, this.y + this.height/2 - 5, 10, 10);
                 break;
                 
             case 'teleporter':
-                // Teleporter - pixel art style circular ship with glow
-                // Outer circle
+                // Teleporter - simple circular ship
                 this.ctx.beginPath();
                 this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
                 this.ctx.fill();
@@ -262,132 +277,92 @@ class Enemy {
                 this.ctx.beginPath();
                 this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 6, 0, Math.PI * 2);
                 this.ctx.fill();
-                
-                // Teleport effect
-                if (this.teleportCooldown > this.teleportCooldownMax - 10) {
-                    this.ctx.strokeStyle = '#00ffff';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 
-                                this.width / 2 + 5, 0, Math.PI * 2);
-                    this.ctx.stroke();
-                }
                 break;
                 
             case 'splitter':
-                // Splitter - pixel art style octagonal ship
+                // Splitter - simple octagonal ship
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.x + 10, this.y);
-                this.ctx.lineTo(this.x + 30, this.y);
-                this.ctx.lineTo(this.x + 40, this.y + 10);
-                this.ctx.lineTo(this.x + 40, this.y + 30);
-                this.ctx.lineTo(this.x + 30, this.y + 40);
-                this.ctx.lineTo(this.x + 10, this.y + 40);
-                this.ctx.lineTo(this.x, this.y + 30);
+                this.ctx.lineTo(this.x + this.width - 10, this.y);
+                this.ctx.lineTo(this.x + this.width, this.y + 10);
+                this.ctx.lineTo(this.x + this.width, this.y + this.height - 10);
+                this.ctx.lineTo(this.x + this.width - 10, this.y + this.height);
+                this.ctx.lineTo(this.x + 10, this.y + this.height);
+                this.ctx.lineTo(this.x, this.y + this.height - 10);
                 this.ctx.lineTo(this.x, this.y + 10);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Inner details
+                // Simple details
                 this.ctx.fillStyle = '#aaaa00';
                 this.ctx.beginPath();
-                this.ctx.arc(this.x + 20, this.y + 20, 10, 0, Math.PI * 2);
+                this.ctx.arc(this.x + this.width/2, this.y + this.height/2, 10, 0, Math.PI * 2);
                 this.ctx.fill();
                 
                 // Split line
                 this.ctx.strokeStyle = '#000';
                 this.ctx.lineWidth = 2;
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 5, this.y + 20);
-                this.ctx.lineTo(this.x + 35, this.y + 20);
+                this.ctx.moveTo(this.x + this.width/2, this.y + 5);
+                this.ctx.lineTo(this.x + this.width/2, this.y + this.height - 5);
                 this.ctx.stroke();
                 break;
                 
             case 'bomber':
-                // Bomber - pixel art style wide ship with bombs
-                this.ctx.fillRect(this.x, this.y + 5, 45, 15);
+                // Bomber - simple wide ship
+                this.ctx.fillRect(this.x + 10, this.y + 5, this.width - 20, this.height - 10);
                 
-                // Wings
+                // Front section
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y);
-                this.ctx.lineTo(this.x + 35, this.y);
-                this.ctx.lineTo(this.x + 45, this.y + 5);
-                this.ctx.lineTo(this.x, this.y + 5);
-                this.ctx.closePath();
-                this.ctx.fill();
-                
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y + 20);
-                this.ctx.lineTo(this.x + 35, this.y + 20);
-                this.ctx.lineTo(this.x + 45, this.y + 25);
-                this.ctx.lineTo(this.x, this.y + 25);
+                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width - 10, this.y + 5);
+                this.ctx.lineTo(this.x + this.width - 10, this.y + this.height - 5);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
                 // Bombs
                 this.ctx.fillStyle = '#ffff00';
                 this.ctx.beginPath();
-                this.ctx.arc(this.x + 15, this.y + 25, 3, 0, Math.PI * 2);
+                this.ctx.arc(this.x + 15, this.y + this.height + 3, 3, 0, Math.PI * 2);
                 this.ctx.fill();
                 
                 this.ctx.beginPath();
-                this.ctx.arc(this.x + 30, this.y + 25, 3, 0, Math.PI * 2);
+                this.ctx.arc(this.x + 30, this.y + this.height + 3, 3, 0, Math.PI * 2);
                 this.ctx.fill();
                 break;
                 
             case 'boss':
-                // Boss - pixel art style large complex ship
-                // Main body
-                this.ctx.fillRect(this.x + 10, this.y + 10, 60, 30);
+                // Boss - simplified large ship
+                // Main hull
+                this.ctx.fillRect(this.x + 20, this.y + 15, this.width - 40, this.height - 30);
                 
-                // Front
+                // Front section
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 70, this.y + 10);
-                this.ctx.lineTo(this.x + 80, this.y + 25);
-                this.ctx.lineTo(this.x + 70, this.y + 40);
+                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width - 20, this.y + 15);
+                this.ctx.lineTo(this.x + this.width - 20, this.y + this.height - 15);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Wings
+                // Upper and lower hulls
+                this.ctx.fillRect(this.x + 20, this.y, this.width - 40, 15);
+                this.ctx.fillRect(this.x + 20, this.y + this.height - 15, this.width - 40, 15);
+                
+                // Rear section
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y);
-                this.ctx.lineTo(this.x + 60, this.y);
-                this.ctx.lineTo(this.x + 70, this.y + 10);
-                this.ctx.lineTo(this.x, this.y + 10);
+                this.ctx.moveTo(this.x, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + 20, this.y + 15);
+                this.ctx.lineTo(this.x + 20, this.y + this.height - 15);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y + 40);
-                this.ctx.lineTo(this.x + 60, this.y + 40);
-                this.ctx.lineTo(this.x + 70, this.y + 50);
-                this.ctx.lineTo(this.x, this.y + 50);
-                this.ctx.closePath();
-                this.ctx.fill();
-                
-                // Rear fins
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y + 10);
-                this.ctx.lineTo(this.x, this.y);
-                this.ctx.lineTo(this.x, this.y + 10);
-                this.ctx.closePath();
-                this.ctx.fill();
-                
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y + 40);
-                this.ctx.lineTo(this.x, this.y + 50);
-                this.ctx.lineTo(this.x, this.y + 35);
-                this.ctx.closePath();
-                this.ctx.fill();
-                
-                // Details - cockpit and weapons
+                // Command bridge
                 this.ctx.fillStyle = '#ffffff';
-                this.ctx.fillRect(this.x + 25, this.y + 20, 10, 10);
+                this.ctx.fillRect(this.x + this.width - 40, this.y + this.height / 2 - 10, 15, 20);
                 
-                this.ctx.fillStyle = '#aa00aa';
-                this.ctx.fillRect(this.x + 45, this.y + 5, 10, 5);
-                this.ctx.fillRect(this.x + 45, this.y + 40, 10, 5);
-                this.ctx.fillRect(this.x + 60, this.y + 15, 5, 20);
+                // Weapon systems
+                this.ctx.fillStyle = '#ff00ff';
+                this.ctx.fillRect(this.x + this.width - 15, this.y + this.height / 2 - 10, 15, 20);
                 break;
         }
         
@@ -400,18 +375,24 @@ class Enemy {
             const healthBarHeight = 3;
             const healthPercentage = this.health / this.maxHealth;
             
-            // Background
+            // Health bar background
             this.ctx.fillStyle = '#333333';
             this.ctx.fillRect(this.x, this.y - 8, healthBarWidth, healthBarHeight);
             
-            // Health
-            this.ctx.fillStyle = '#33ff33';
+            // Health bar fill
+            this.ctx.fillStyle = healthPercentage > 0.5 ? '#00ff00' : healthPercentage > 0.25 ? '#ffff00' : '#ff0000';
             this.ctx.fillRect(this.x, this.y - 8, healthBarWidth * healthPercentage, healthBarHeight);
         }
     }
     
-    hit(damage = 1) {
+    hit(damage) {
         this.health -= damage;
+        
+        // Log when boss is about to be destroyed
+        if (this.type === 'boss' && this.health <= 0) {
+            console.log("Boss health reduced to zero or below:", this.health);
+        }
+        
         return this.health <= 0;
     }
     
@@ -419,59 +400,37 @@ class Enemy {
         return this.x + this.width < 0;
     }
     
-    shouldShoot() {
-        return Math.random() < this.shootChance;
-    }
-    
     getShootChance() {
         return this.shootChance;
     }
     
     shoot() {
-        if (this.type === 'bomber') {
-            // Bombers drop bombs downward
-            const bomb = new Projectile(this.x + this.width / 2, this.y + this.height, true);
-            bomb.speed = 3; // Slower than regular projectiles
-            bomb.width = 8;
-            bomb.height = 8;
-            bomb.color = '#ffff00';
-            // Override the draw method for bombs
-            bomb.draw = function(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            };
-            return bomb;
-        }
-        
         return new Projectile(this.x, this.y + this.height / 2, true);
     }
     
     split() {
         if (!this.canSplit || this.splitCount > 0) return null;
         
-        this.splitCount++;
-        
-        // Create two smaller enemies
         const smallerEnemies = [];
+        const halfWidth = this.width * 0.6;
+        const halfHeight = this.height * 0.6;
         
+        // Create two smaller splitter enemies
         for (let i = 0; i < 2; i++) {
-            const smallEnemy = new Enemy(this.canvas, 'small', this.level, this.difficulty);
-            smallEnemy.x = this.x;
-            smallEnemy.y = this.y + (i === 0 ? -20 : 20);
-            smallEnemy.health = 1;
-            smallEnemy.maxHealth = 1;
-            smallEnemy.width = this.width * 0.6;
-            smallEnemy.height = this.height * 0.6;
-            smallerEnemies.push(smallEnemy);
+            const smallerEnemy = new Enemy(this.canvas, 'small', this.level, this.difficulty);
+            smallerEnemy.width = halfWidth;
+            smallerEnemy.height = halfHeight;
+            smallerEnemy.x = this.x;
+            smallerEnemy.y = this.y + (i === 0 ? -halfHeight : halfHeight);
+            smallerEnemy.health = 1;
+            smallerEnemy.maxHealth = 1;
+            smallerEnemy.canSplit = false;
+            smallerEnemy.splitCount = 1;
+            smallerEnemy.color = '#dddd00';
+            
+            smallerEnemies.push(smallerEnemy);
         }
         
         return smallerEnemies;
-    }
-    
-    dropPowerUp() {
-        // This function is no longer used - power-ups are handled by the game class
-        return null;
     }
 }

@@ -621,9 +621,11 @@ class LevelManager {
     
     enemyDefeated() {
         this.enemiesDefeated++;
+        console.log(`Enemy defeated: ${this.enemiesDefeated}/${this.enemiesForNextLevel}`);
         
         // Check if it's time to spawn a boss
         if (this.enemiesDefeated >= this.enemiesForNextLevel && !this.bossSpawned) {
+            console.log("Spawning boss!");
             this.spawnBoss();
             this.bossSpawned = true;
             
@@ -635,6 +637,7 @@ class LevelManager {
     }
     
     bossDestroyed() {
+        console.log("Boss destroyed! Preparing level transition...");
         this.bossDefeated = true;
         
         // Play level up sound
@@ -642,12 +645,108 @@ class LevelManager {
             this.game.soundManager.play('levelUp');
         }
         
-        this.advanceLevel();
+        // Clear all enemies and projectiles to prevent collisions during level transition
+        if (this.game) {
+            this.game.enemies = [];
+            this.game.enemyProjectiles = [];
+        }
+        
+        // Create a level transition effect
+        this.startLevelTransitionEffect();
+    }
+    
+    startLevelTransitionEffect() {
+        // Create a transition overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'levelTransitionOverlay';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 255, 0, 0)';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.zIndex = '100';
+        overlay.style.transition = 'background-color 0.5s ease-in-out';
+        
+        // Create level text
+        const levelText = document.createElement('div');
+        levelText.textContent = `LEVEL ${this.currentLevel + 1}`;
+        levelText.style.color = '#33ff33';
+        levelText.style.fontFamily = 'Courier New, monospace';
+        levelText.style.fontSize = '48px';
+        levelText.style.fontWeight = 'bold';
+        levelText.style.opacity = '0';
+        levelText.style.transition = 'opacity 0.5s ease-in-out';
+        
+        overlay.appendChild(levelText);
+        document.querySelector('.game-container').appendChild(overlay);
+        
+        // Fade in
+        setTimeout(() => {
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            levelText.style.opacity = '1';
+        }, 100);
+        
+        // Hold
+        setTimeout(() => {
+            // Advance to next level
+            this.advanceLevel();
+            console.log("Level advanced to:", this.currentLevel);
+            
+            // Update level text
+            levelText.textContent = `LEVEL ${this.currentLevel}`;
+        }, 1000);
+        
+        // Fade out
+        setTimeout(() => {
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            levelText.style.opacity = '0';
+        }, 2000);
+        
+        // Remove overlay
+        setTimeout(() => {
+            overlay.remove();
+        }, 2500);
     }
     
     advanceLevel() {
         this.currentLevel++;
-        this.game.player.level = this.currentLevel;
+        console.log("Advancing to level:", this.currentLevel);
+        
+        if (this.game && this.game.player) {
+            // Store the current lives and score before updating level
+            const currentLives = this.game.player.lives;
+            const currentScore = this.game.player.score;
+            
+            // Update player level
+            this.game.player.level = this.currentLevel;
+            
+            // Ensure lives and score are preserved
+            // Make sure lives is a valid number
+            if (typeof currentLives !== 'number' || isNaN(currentLives) || currentLives < 0) {
+                console.error("Invalid lives value during level advancement:", currentLives);
+                this.game.player.lives = 1; // Reset to 1 if invalid
+            } else {
+                this.game.player.lives = Math.max(1, currentLives); // Ensure at least 1 life
+            }
+            
+            this.game.player.score = currentScore;
+            
+            // Make player temporarily invulnerable during level transition
+            this.game.player.isInvulnerable = true;
+            this.game.player.invulnerabilityTime = 180; // 3 seconds at 60fps
+            
+            console.log(`Player stats after level advancement: Lives=${this.game.player.lives}, Score=${this.game.player.score}`);
+            
+            // Update UI immediately
+            document.getElementById('lives').textContent = this.game.player.lives;
+            document.getElementById('score').textContent = this.game.player.score;
+            document.getElementById('level').textContent = this.currentLevel;
+        }
+        
         this.enemiesDefeated = 0;
         
         // Adjust enemies needed for next level based on difficulty and current level
@@ -660,6 +759,8 @@ class LevelManager {
             this.enemiesForNextLevel = 25 + this.currentLevel * levelMultiplier;
         }
         
+        console.log("Enemies needed for next level:", this.enemiesForNextLevel);
+        
         this.bossDefeated = false;
         this.bossSpawned = false;
         
@@ -668,8 +769,11 @@ class LevelManager {
     }
     
     spawnBoss() {
+        console.log("Creating boss enemy for level", this.currentLevel);
         // Create boss with appropriate difficulty
-        this.game.enemies.push(new Enemy(this.game.canvas, 'boss', this.currentLevel, this.difficulty));
+        const boss = new Enemy(this.game.canvas, 'boss', this.currentLevel, this.difficulty);
+        console.log("Boss created:", boss);
+        this.game.enemies.push(boss);
     }
     
     getEnemySpawnRate() {
