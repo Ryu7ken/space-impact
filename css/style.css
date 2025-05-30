@@ -87,3 +87,35 @@ button:hover {
     color: #000;
     box-shadow: 0 0 15px #33ff33;
 }
+
+/* Difficulty screen styles */
+.difficulty-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.difficulty-button {
+    min-width: 120px;
+    text-align: center;
+}
+
+.difficulty-button:hover {
+    transform: scale(1.05);
+}
+
+.difficulty-button.selected {
+    background-color: #33ff33;
+    color: #000;
+    box-shadow: 0 0 15px #33ff33;
+}
+
+.difficulty-description {
+    max-width: 500px;
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #33ff33;
+    background-color: rgba(51, 255, 51, 0.1);
+}

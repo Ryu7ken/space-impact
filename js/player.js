@@ -1,7 +1,8 @@
 class Player {
-    constructor(canvas) {
+    constructor(canvas, difficulty = 'Medium') {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
+        this.difficulty = difficulty;
         
         // Player dimensions
         this.width = 40;
@@ -18,15 +19,22 @@ class Player {
         this.movingLeft = false;
         this.movingRight = false;
         
-        // Player stats
-        this.lives = 3;
+        // Player stats - adjusted by difficulty
+        if (difficulty === 'Easy') {
+            this.lives = 5;
+        } else if (difficulty === 'Medium') {
+            this.lives = 3;
+        } else { // Hard
+            this.lives = 2;
+        }
+        
         this.score = 0;
         this.level = 1;
         
         // Shooting
         this.isShooting = false;
         this.shootCooldown = 0;
-        this.shootCooldownMax = 15; // frames between shots
+        this.shootCooldownMax = difficulty === 'Hard' ? 18 : 15; // Slower shooting on hard
         this.projectileDamage = 1;
         
         // Invulnerability after hit
@@ -136,59 +144,206 @@ class Player {
         
         // Draw shield if active
         if (this.hasPowerUp('shield')) {
+            // Create shield glow effect
+            const gradient = this.ctx.createRadialGradient(
+                this.x + this.width / 2, this.y + this.height / 2, this.width * 0.4,
+                this.x + this.width / 2, this.y + this.height / 2, this.width * 0.8
+            );
+            gradient.addColorStop(0, 'rgba(0, 170, 255, 0.1)');
+            gradient.addColorStop(0.7, 'rgba(0, 170, 255, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 170, 255, 0.1)');
+            
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 
+                    this.width * 0.8, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Shield border
             this.ctx.beginPath();
             this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 
                     this.width * 0.8, 0, Math.PI * 2);
             this.ctx.strokeStyle = '#00aaff';
             this.ctx.lineWidth = 2;
             this.ctx.stroke();
+            
+            // Shield hexagonal pattern
+            this.ctx.strokeStyle = 'rgba(0, 170, 255, 0.5)';
+            this.ctx.lineWidth = 1;
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const startX = this.x + this.width / 2 + Math.cos(angle) * this.width * 0.4;
+                const startY = this.y + this.height / 2 + Math.sin(angle) * this.width * 0.4;
+                const endX = this.x + this.width / 2 + Math.cos(angle) * this.width * 0.8;
+                const endY = this.y + this.height / 2 + Math.sin(angle) * this.width * 0.8;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(startX, startY);
+                this.ctx.lineTo(endX, endY);
+                this.ctx.stroke();
+            }
         }
         
-        // Draw player ship in pixel art style similar to original Space Impact
-        const pixelSize = 2;
-        this.ctx.fillStyle = '#33ff33';
-        
-        // Main body - rectangular shape
-        this.ctx.fillRect(this.x + 10, this.y + 6, 20, 8);
-        
-        // Front part - triangular nose
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x + 30, this.y + 6);
-        this.ctx.lineTo(this.x + 40, this.y + 10);
-        this.ctx.lineTo(this.x + 30, this.y + 14);
-        this.ctx.closePath();
-        this.ctx.fill();
-        
-        // Rear fins
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x + 10, this.y + 6);
-        this.ctx.lineTo(this.x, this.y);
-        this.ctx.lineTo(this.x + 10, this.y + 4);
-        this.ctx.closePath();
-        this.ctx.fill();
-        
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x + 10, this.y + 14);
-        this.ctx.lineTo(this.x, this.y + 20);
-        this.ctx.lineTo(this.x + 10, this.y + 16);
-        this.ctx.closePath();
-        this.ctx.fill();
-        
-        // Cockpit
-        this.ctx.fillStyle = '#007700';
-        this.ctx.fillRect(this.x + 16, this.y + 8, 8, 4);
-        
-        // Engine glow
-        this.ctx.fillStyle = '#ff3333';
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x, this.y + 8);
-        this.ctx.lineTo(this.x - 6, this.y + 10);
-        this.ctx.lineTo(this.x, this.y + 12);
-        this.ctx.closePath();
-        this.ctx.fill();
+        // Draw player ship with enhanced graphics
+        this.drawEnhancedShip();
         
         // Draw power-up indicators
         this.drawPowerUpIndicators();
+        
+        // Draw damage level indicator
+        this.drawDamageLevel();
+    }
+    
+    drawEnhancedShip() {
+        // Main body gradient
+        const bodyGradient = this.ctx.createLinearGradient(
+            this.x, this.y + this.height / 2,
+            this.x + this.width, this.y + this.height / 2
+        );
+        bodyGradient.addColorStop(0, '#1a7a1a');
+        bodyGradient.addColorStop(0.4, '#33ff33');
+        bodyGradient.addColorStop(1, '#88ff88');
+        
+        // Main body - sleek shape
+        this.ctx.fillStyle = bodyGradient;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x + 10, this.y + 4);
+        this.ctx.lineTo(this.x + 30, this.y + 4);
+        this.ctx.lineTo(this.x + 40, this.y + 10);
+        this.ctx.lineTo(this.x + 30, this.y + 16);
+        this.ctx.lineTo(this.x + 10, this.y + 16);
+        this.ctx.lineTo(this.x + 5, this.y + 10);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // Cockpit with gradient
+        const cockpitGradient = this.ctx.createLinearGradient(
+            this.x + 16, this.y + 8,
+            this.x + 24, this.y + 12
+        );
+        cockpitGradient.addColorStop(0, '#007700');
+        cockpitGradient.addColorStop(0.5, '#00aa00');
+        cockpitGradient.addColorStop(1, '#007700');
+        
+        this.ctx.fillStyle = cockpitGradient;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x + 16, this.y + 8);
+        this.ctx.lineTo(this.x + 26, this.y + 8);
+        this.ctx.lineTo(this.x + 24, this.y + 12);
+        this.ctx.lineTo(this.x + 16, this.y + 12);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // Wing details
+        this.ctx.fillStyle = '#1a7a1a';
+        
+        // Top wing
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x + 15, this.y + 4);
+        this.ctx.lineTo(this.x + 25, this.y + 4);
+        this.ctx.lineTo(this.x + 20, this.y);
+        this.ctx.lineTo(this.x + 10, this.y + 2);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // Bottom wing
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x + 15, this.y + 16);
+        this.ctx.lineTo(this.x + 25, this.y + 16);
+        this.ctx.lineTo(this.x + 20, this.y + 20);
+        this.ctx.lineTo(this.x + 10, this.y + 18);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // Engine glow with gradient
+        const engineGradient = this.ctx.createRadialGradient(
+            this.x, this.y + 10, 1,
+            this.x, this.y + 10, 8
+        );
+        engineGradient.addColorStop(0, '#ffffff');
+        engineGradient.addColorStop(0.3, '#ffaa33');
+        engineGradient.addColorStop(0.7, '#ff3333');
+        engineGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        
+        this.ctx.fillStyle = engineGradient;
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y + 10, 8, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Weapon hardpoints - base color (will be overridden by drawDamageLevel if powered up)
+        if (this.projectileDamage <= 1) {
+            this.ctx.fillStyle = '#555555';
+            this.ctx.fillRect(this.x + 30, this.y + 5, 5, 2);
+            this.ctx.fillRect(this.x + 30, this.y + 13, 5, 2);
+        }
+        
+        // Highlight details
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 0.5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x + 10, this.y + 4);
+        this.ctx.lineTo(this.x + 30, this.y + 4);
+        this.ctx.stroke();
+    }
+    
+    drawDamageLevel() {
+        // Draw damage level indicator
+        const damageLevel = this.projectileDamage - 1; // Base damage is 1
+        
+        if (damageLevel > 0) {
+            // Draw weapon glow based on damage level
+            const glowSize = 3 + damageLevel;
+            const glowAlpha = Math.min(0.7, 0.3 + (damageLevel * 0.1));
+            
+            // Draw weapon hardpoints with glow based on damage level
+            let weaponColor;
+            if (damageLevel <= 2) {
+                weaponColor = '#33ff33'; // Green for low damage
+            } else if (damageLevel <= 4) {
+                weaponColor = '#ffaa00'; // Orange for medium damage
+            } else if (damageLevel <= 6) {
+                weaponColor = '#ff3333'; // Red for high damage
+            } else {
+                weaponColor = '#aa00ff'; // Purple for ultimate damage
+            }
+            
+            // Draw enhanced weapon hardpoints
+            this.ctx.fillStyle = weaponColor;
+            
+            // Top weapon
+            this.ctx.fillRect(this.x + 30, this.y + 4, 7, 3);
+            
+            // Bottom weapon
+            this.ctx.fillRect(this.x + 30, this.y + 13, 7, 3);
+            
+            // Weapon glow
+            this.ctx.fillStyle = `rgba(${parseInt(weaponColor.substr(1, 2), 16)}, 
+                                  ${parseInt(weaponColor.substr(3, 2), 16)}, 
+                                  ${parseInt(weaponColor.substr(5, 2), 16)}, 
+                                  ${glowAlpha})`;
+            this.ctx.beginPath();
+            this.ctx.arc(this.x + 35, this.y + 5.5, glowSize, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            this.ctx.beginPath();
+            this.ctx.arc(this.x + 35, this.y + 14.5, glowSize, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Draw firing pattern indicator
+            let patternText = "";
+            if (this.hasPowerUp('rapidFire') && this.projectileDamage >= 3) {
+                patternText = "Triple Shot";
+            } else if (this.hasPowerUp('rapidFire') || this.projectileDamage >= 4) {
+                patternText = "Double Shot";
+            }
+            
+            if (patternText) {
+                this.ctx.fillStyle = weaponColor;
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(patternText, 10, this.canvas.height - 25);
+            }
+        }
     }
     
     drawPowerUpIndicators() {
@@ -214,13 +369,40 @@ class Player {
                         break;
                 }
                 
-                // Draw indicator
+                // Draw indicator with glow effect
+                this.ctx.shadowColor = color;
+                this.ctx.shadowBlur = 5;
                 this.ctx.fillStyle = color;
-                this.ctx.font = '12px Arial';
+                this.ctx.font = '14px Arial';
                 this.ctx.textAlign = 'left';
-                this.ctx.fillText(`${symbol} ${Math.ceil(timeLeft / 60)}s`, 10, yOffset);
-                yOffset += 20;
+                
+                // Format time display - show minutes:seconds for longer durations
+                let timeDisplay;
+                const totalSeconds = Math.ceil(timeLeft / 60);
+                if (totalSeconds >= 60) {
+                    const minutes = Math.floor(totalSeconds / 60);
+                    const seconds = totalSeconds % 60;
+                    timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    timeDisplay = `${totalSeconds}s`;
+                }
+                
+                this.ctx.fillText(`${symbol} ${timeDisplay}`, 10, yOffset);
+                this.ctx.shadowBlur = 0;
+                yOffset += 25;
             }
+        }
+        
+        // Draw permanent damage boost indicator
+        if (this.projectileDamage > 1) {
+            const damageBoost = this.projectileDamage - 1;
+            this.ctx.shadowColor = '#ff0000';
+            this.ctx.shadowBlur = 5;
+            this.ctx.fillStyle = '#ff0000';
+            this.ctx.font = '14px Arial';
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(`💥 Damage +${damageBoost} (Permanent)`, 10, yOffset);
+            this.ctx.shadowBlur = 0;
         }
     }
     
@@ -228,11 +410,31 @@ class Player {
         if (this.isShooting && this.shootCooldown === 0) {
             // Adjust cooldown based on rapid fire power-up
             this.shootCooldown = this.hasPowerUp('rapidFire') ? 
-                Math.floor(this.shootCooldownMax / 2) : this.shootCooldownMax;
+                Math.floor(this.shootCooldownMax / 3) : this.shootCooldownMax;
             
-            // Create projectile with damage based on double damage power-up
-            const damage = this.hasPowerUp('doubleDamage') ? 2 : 1;
-            return new Projectile(this.x + this.width, this.y + this.height / 2, false, damage);
+            // Calculate damage based on accumulated damage and double damage power-up
+            const damage = this.hasPowerUp('doubleDamage') ? 
+                this.projectileDamage * 2 : this.projectileDamage;
+            
+            // Create projectile array to return
+            const projectiles = [];
+            
+            // Determine firing pattern based on damage and rapid fire
+            if (this.hasPowerUp('rapidFire') && this.projectileDamage >= 3) {
+                // Triple shot for high damage + rapid fire
+                projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2, false, damage));
+                projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2, false, damage, -6));
+                projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2, false, damage, 6));
+            } else if (this.hasPowerUp('rapidFire') || this.projectileDamage >= 4) {
+                // Double shot for rapid fire or very high damage
+                projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2 - 4, false, damage));
+                projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2 + 4, false, damage));
+            } else {
+                // Single shot for normal firing
+                projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2, false, damage));
+            }
+            
+            return projectiles;
         }
         return null;
     }

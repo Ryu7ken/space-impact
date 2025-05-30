@@ -1,9 +1,11 @@
+// Enemy class definition
 class Enemy {
-    constructor(canvas, type, level) {
+    constructor(canvas, type, level = 1, difficulty = 'Medium') {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.type = type;
         this.level = level;
+        this.difficulty = difficulty;
         
         // Set properties based on enemy type
         this.setEnemyProperties();
@@ -26,6 +28,9 @@ class Enemy {
         // For splitting enemies
         this.canSplit = type === 'splitter';
         this.splitCount = 0;
+        
+        // Apply difficulty modifiers after setting properties
+        this.applyDifficultyModifiers();
     }
     
     setEnemyProperties() {
@@ -35,8 +40,10 @@ class Enemy {
                 this.height = 15;
                 this.speed = 2 + this.level * 0.2;
                 this.health = 1;
+                this.maxHealth = 1;
                 this.points = 10;
                 this.shootChance = 0.002;
+                this.shootCooldown = 120;
                 this.color = '#ff3333';
                 break;
                 
@@ -45,8 +52,10 @@ class Enemy {
                 this.height = 20;
                 this.speed = 1.5 + this.level * 0.15;
                 this.health = 2;
+                this.maxHealth = 2;
                 this.points = 20;
                 this.shootChance = 0.005;
+                this.shootCooldown = 100;
                 this.color = '#ff9933';
                 break;
                 
@@ -55,8 +64,10 @@ class Enemy {
                 this.height = 30;
                 this.speed = 1 + this.level * 0.1;
                 this.health = 3;
+                this.maxHealth = 3;
                 this.points = 30;
                 this.shootChance = 0.008;
+                this.shootCooldown = 90;
                 this.color = '#ff0099';
                 break;
                 
@@ -65,8 +76,10 @@ class Enemy {
                 this.height = 30;
                 this.speed = 1.8 + this.level * 0.15;
                 this.health = 2;
+                this.maxHealth = 2;
                 this.points = 25;
                 this.shootChance = 0.004;
+                this.shootCooldown = 110;
                 this.color = '#00ffff';
                 break;
                 
@@ -75,8 +88,10 @@ class Enemy {
                 this.height = 40;
                 this.speed = 1.2 + this.level * 0.1;
                 this.health = 2;
+                this.maxHealth = 2;
                 this.points = 35;
                 this.shootChance = 0.003;
+                this.shootCooldown = 120;
                 this.color = '#ffff00';
                 break;
                 
@@ -85,8 +100,10 @@ class Enemy {
                 this.height = 25;
                 this.speed = 0.8 + this.level * 0.1;
                 this.health = 4;
+                this.maxHealth = 4;
                 this.points = 40;
                 this.shootChance = 0.01;
+                this.shootCooldown = 80;
                 this.color = '#ff00ff';
                 break;
                 
@@ -95,10 +112,36 @@ class Enemy {
                 this.height = 50;
                 this.speed = 0.5 + this.level * 0.05;
                 this.health = 10 + this.level * 2;
+                this.maxHealth = 10 + this.level * 2;
                 this.points = 100;
                 this.shootChance = 0.02;
+                this.shootCooldown = 60;
                 this.color = '#ff00ff';
                 break;
+        }
+    }
+    
+    applyDifficultyModifiers() {
+        // Apply difficulty-based modifiers to enemy properties
+        switch(this.difficulty) {
+            case 'Easy':
+                this.speed *= 0.8;
+                this.health = Math.max(1, Math.floor(this.health * 0.8));
+                this.maxHealth = this.health;
+                this.shootCooldown = Math.floor(this.shootCooldown * 1.3);
+                this.shootChance *= 0.7;
+                break;
+                
+            case 'Hard':
+                this.speed *= 1.3;
+                this.health = Math.ceil(this.health * 1.3);
+                this.maxHealth = this.health;
+                this.shootCooldown = Math.floor(this.shootCooldown * 0.7);
+                this.shootChance *= 1.3;
+                this.points = Math.floor(this.points * 1.2); // More points on hard
+                break;
+                
+            // Medium is default, no changes needed
         }
     }
     
@@ -135,61 +178,58 @@ class Enemy {
                 break;
         }
         
-        // Teleporter enemy behavior
+        // Handle teleporting for teleporter enemies
         if (this.type === 'teleporter') {
-            if (this.teleportCooldown > 0) {
-                this.teleportCooldown--;
-            } else if (Math.random() < 0.01) {
+            this.teleportCooldown++;
+            if (this.teleportCooldown >= this.teleportCooldownMax) {
                 // Teleport to a new position
-                this.x = Math.min(this.canvas.width - this.width, this.x + (Math.random() < 0.5 ? -1 : 1) * 100);
                 this.y = Math.random() * (this.canvas.height - this.height - 20) + 10;
-                this.teleportCooldown = this.teleportCooldownMax;
+                this.baseY = this.y;
+                this.teleportCooldown = 0;
             }
         }
         
-        // Bomber enemy behavior - drops mini bombs
-        if (this.type === 'bomber' && Math.random() < 0.005) {
-            // This will be handled in the game class to create a bomb projectile
+        // Handle bombing for bomber enemies
+        if (this.type === 'bomber' && Math.random() < 0.01) {
             return 'bomb';
         }
-        
-        // Keep enemy within canvas bounds
-        if (this.y < 0) this.y = 0;
-        if (this.y > this.canvas.height - this.height) this.y = this.canvas.height - this.height;
         
         return null;
     }
     
     draw() {
-        // For teleporter, add teleport effect
+        // Fade effect for teleporting enemies
         if (this.type === 'teleporter' && this.teleportCooldown > this.teleportCooldownMax - 10) {
             this.ctx.globalAlpha = 0.5;
         }
         
+        // Draw enemy based on type
         this.ctx.fillStyle = this.color;
         
-        // Draw different shapes based on enemy type in pixel art style
         switch(this.type) {
             case 'small':
                 // Small enemy - pixel art style triangular ship
-                this.ctx.fillRect(this.x, this.y + 6, 15, 3);
-                this.ctx.fillRect(this.x + 5, this.y + 3, 15, 9);
-                this.ctx.fillRect(this.x + 15, this.y + 6, 10, 3);
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x, this.y);
+                this.ctx.lineTo(this.x, this.y + this.height);
+                this.ctx.closePath();
+                this.ctx.fill();
                 
                 // Details
                 this.ctx.fillStyle = '#aa0000';
-                this.ctx.fillRect(this.x + 8, this.y + 5, 4, 5);
+                this.ctx.fillRect(this.x + 5, this.y + 5, 5, 5);
                 break;
                 
             case 'medium':
-                // Medium enemy - pixel art style wider ship
-                this.ctx.fillRect(this.x, this.y + 8, 25, 4);
-                this.ctx.fillRect(this.x + 5, this.y + 4, 20, 12);
-                this.ctx.fillRect(this.x + 25, this.y + 8, 10, 4);
+                // Medium enemy - pixel art style rectangular ship
+                this.ctx.fillRect(this.x, this.y + 5, 25, 10);
+                this.ctx.fillRect(this.x + 25, this.y + 7, 10, 6);
                 
                 // Details
                 this.ctx.fillStyle = '#aa5500';
-                this.ctx.fillRect(this.x + 15, this.y + 6, 6, 8);
+                this.ctx.fillRect(this.x + 5, this.y + 7, 10, 6);
+                this.ctx.fillRect(this.x + 20, this.y + 8, 5, 4);
                 break;
                 
             case 'large':
@@ -235,40 +275,64 @@ class Enemy {
                 break;
                 
             case 'splitter':
-                // Splitter - pixel art style square with X pattern
-                this.ctx.fillRect(this.x, this.y, this.width, this.height);
+                // Splitter - pixel art style octagonal ship
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + 10, this.y);
+                this.ctx.lineTo(this.x + 30, this.y);
+                this.ctx.lineTo(this.x + 40, this.y + 10);
+                this.ctx.lineTo(this.x + 40, this.y + 30);
+                this.ctx.lineTo(this.x + 30, this.y + 40);
+                this.ctx.lineTo(this.x + 10, this.y + 40);
+                this.ctx.lineTo(this.x, this.y + 30);
+                this.ctx.lineTo(this.x, this.y + 10);
+                this.ctx.closePath();
+                this.ctx.fill();
                 
-                // X pattern
+                // Inner details
+                this.ctx.fillStyle = '#aaaa00';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + 20, this.y + 20, 10, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Split line
                 this.ctx.strokeStyle = '#000';
                 this.ctx.lineWidth = 2;
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 5, this.y + 5);
-                this.ctx.lineTo(this.x + this.width - 5, this.y + this.height - 5);
-                this.ctx.moveTo(this.x + this.width - 5, this.y + 5);
-                this.ctx.lineTo(this.x + 5, this.y + this.height - 5);
+                this.ctx.moveTo(this.x + 5, this.y + 20);
+                this.ctx.lineTo(this.x + 35, this.y + 20);
                 this.ctx.stroke();
-                
-                // Center dot
-                this.ctx.fillStyle = '#000';
-                this.ctx.beginPath();
-                this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 4, 0, Math.PI * 2);
-                this.ctx.fill();
                 break;
                 
             case 'bomber':
-                // Bomber - pixel art style ship with bomb bay
-                // Main body
-                this.ctx.fillRect(this.x + 5, this.y, 35, 25);
-                this.ctx.fillRect(this.x, this.y + 8, 5, 9);
-                this.ctx.fillRect(this.x + 40, this.y + 8, 5, 9);
+                // Bomber - pixel art style wide ship with bombs
+                this.ctx.fillRect(this.x, this.y + 5, 45, 15);
                 
-                // Bomb bay
-                this.ctx.fillStyle = '#000';
-                this.ctx.fillRect(this.x + 20, this.y + 20, 5, 5);
+                // Wings
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + 10, this.y);
+                this.ctx.lineTo(this.x + 35, this.y);
+                this.ctx.lineTo(this.x + 45, this.y + 5);
+                this.ctx.lineTo(this.x, this.y + 5);
+                this.ctx.closePath();
+                this.ctx.fill();
                 
-                // Details
-                this.ctx.fillStyle = '#aa00aa';
-                this.ctx.fillRect(this.x + 15, this.y + 5, 15, 10);
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + 10, this.y + 20);
+                this.ctx.lineTo(this.x + 35, this.y + 20);
+                this.ctx.lineTo(this.x + 45, this.y + 25);
+                this.ctx.lineTo(this.x, this.y + 25);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Bombs
+                this.ctx.fillStyle = '#ffff00';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + 15, this.y + 25, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + 30, this.y + 25, 3, 0, Math.PI * 2);
+                this.ctx.fill();
                 break;
                 
             case 'boss':
@@ -276,11 +340,28 @@ class Enemy {
                 // Main body
                 this.ctx.fillRect(this.x + 10, this.y + 10, 60, 30);
                 
-                // Front section
+                // Front
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 70, this.y + 15);
+                this.ctx.moveTo(this.x + 70, this.y + 10);
                 this.ctx.lineTo(this.x + 80, this.y + 25);
-                this.ctx.lineTo(this.x + 70, this.y + 35);
+                this.ctx.lineTo(this.x + 70, this.y + 40);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Wings
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + 10, this.y);
+                this.ctx.lineTo(this.x + 60, this.y);
+                this.ctx.lineTo(this.x + 70, this.y + 10);
+                this.ctx.lineTo(this.x, this.y + 10);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + 10, this.y + 40);
+                this.ctx.lineTo(this.x + 60, this.y + 40);
+                this.ctx.lineTo(this.x + 70, this.y + 50);
+                this.ctx.lineTo(this.x, this.y + 50);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
@@ -288,7 +369,7 @@ class Enemy {
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.x + 10, this.y + 10);
                 this.ctx.lineTo(this.x, this.y);
-                this.ctx.lineTo(this.x, this.y + 15);
+                this.ctx.lineTo(this.x, this.y + 10);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
@@ -314,13 +395,10 @@ class Enemy {
         this.ctx.globalAlpha = 1.0;
         
         // Draw health bar for enemies with more than 1 health
-        if (this.health > 1) {
+        if (this.maxHealth > 1) {
             const healthBarWidth = this.width;
             const healthBarHeight = 3;
-            const maxHealth = this.type === 'boss' ? (10 + this.level * 2) : 
-                             (this.type === 'large' ? 3 : 
-                             (this.type === 'bomber' ? 4 : 2));
-            const healthPercentage = this.health / maxHealth;
+            const healthPercentage = this.health / this.maxHealth;
             
             // Background
             this.ctx.fillStyle = '#333333';
@@ -343,6 +421,10 @@ class Enemy {
     
     shouldShoot() {
         return Math.random() < this.shootChance;
+    }
+    
+    getShootChance() {
+        return this.shootChance;
     }
     
     shoot() {
@@ -375,10 +457,11 @@ class Enemy {
         const smallerEnemies = [];
         
         for (let i = 0; i < 2; i++) {
-            const smallEnemy = new Enemy(this.canvas, 'small', this.level);
+            const smallEnemy = new Enemy(this.canvas, 'small', this.level, this.difficulty);
             smallEnemy.x = this.x;
             smallEnemy.y = this.y + (i === 0 ? -20 : 20);
             smallEnemy.health = 1;
+            smallEnemy.maxHealth = 1;
             smallEnemy.width = this.width * 0.6;
             smallEnemy.height = this.height * 0.6;
             smallerEnemies.push(smallEnemy);
@@ -388,34 +471,7 @@ class Enemy {
     }
     
     dropPowerUp() {
-        // Chance to drop a power-up when destroyed
-        const dropChance = this.type === 'boss' ? 1.0 : 
-                          (this.type === 'large' || this.type === 'bomber' ? 0.2 : 
-                          (this.type === 'medium' || this.type === 'splitter' || this.type === 'teleporter' ? 0.1 : 0.05));
-        
-        if (Math.random() < dropChance) {
-            // Determine power-up type
-            let powerUpType;
-            const rand = Math.random();
-            
-            if (this.type === 'boss') {
-                // Boss always drops a good power-up
-                if (rand < 0.4) powerUpType = 'shield';
-                else if (rand < 0.7) powerUpType = 'rapidFire';
-                else if (rand < 0.9) powerUpType = 'doubleDamage';
-                else powerUpType = 'extraLife';
-            } else {
-                // Regular enemies
-                if (rand < 0.3) powerUpType = 'shield';
-                else if (rand < 0.6) powerUpType = 'rapidFire';
-                else if (rand < 0.85) powerUpType = 'doubleDamage';
-                else if (rand < 0.95) powerUpType = 'extraLife';
-                else powerUpType = 'bomb';
-            }
-            
-            return new PowerUp(this.x + this.width / 2, this.y + this.height / 2, powerUpType);
-        }
-        
+        // This function is no longer used - power-ups are handled by the game class
         return null;
     }
 }

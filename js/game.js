@@ -10,6 +10,7 @@ class Game {
         // Game state
         this.isRunning = false;
         this.gameOver = false;
+        this.difficulty = 'Medium'; // Default difficulty
         
         // Game objects
         this.player = null;
@@ -25,20 +26,41 @@ class Game {
         
         // UI elements
         this.startScreen = document.getElementById('startScreen');
+        this.difficultyScreen = document.getElementById('difficultyScreen');
         this.gameOverScreen = document.getElementById('gameOverScreen');
         this.startButton = document.getElementById('startButton');
+        this.easyButton = document.getElementById('easyButton');
+        this.mediumButton = document.getElementById('mediumButton');
+        this.hardButton = document.getElementById('hardButton');
         this.restartButton = document.getElementById('restartButton');
         this.finalScoreElement = document.getElementById('finalScore');
-        
-        // Event listeners
-        this.startButton.addEventListener('click', () => this.startGame());
-        this.restartButton.addEventListener('click', () => this.startGame());
+        this.difficultyDescription = document.getElementById('difficultyDescription');
+        this.difficultyDisplay = document.getElementById('difficulty');
         
         // Initialize sound manager
         this.soundManager = new SoundManager();
         
+        // Event listeners
+        this.setupEventListeners();
+        
         // Initial setup
         this.showStartScreen();
+    }
+    
+    setupEventListeners() {
+        // Start and restart buttons
+        this.startButton.addEventListener('click', () => this.showDifficultyScreen());
+        this.restartButton.addEventListener('click', () => this.showDifficultyScreen());
+        
+        // Difficulty buttons
+        this.easyButton.addEventListener('click', () => this.selectDifficulty('Easy'));
+        this.mediumButton.addEventListener('click', () => this.selectDifficulty('Medium'));
+        this.hardButton.addEventListener('click', () => this.selectDifficulty('Hard'));
+        
+        // Hover effects for difficulty descriptions
+        this.easyButton.addEventListener('mouseover', () => this.updateDifficultyDescription('Easy'));
+        this.mediumButton.addEventListener('mouseover', () => this.updateDifficultyDescription('Medium'));
+        this.hardButton.addEventListener('mouseover', () => this.updateDifficultyDescription('Hard'));
     }
     
     resizeCanvas() {
@@ -46,33 +68,77 @@ class Game {
         this.canvas.height = this.canvas.parentElement.clientHeight - 80; // Account for header and controls
     }
     
+    showStartScreen() {
+        this.startScreen.classList.remove('hidden');
+        this.difficultyScreen.classList.add('hidden');
+        this.gameOverScreen.classList.add('hidden');
+    }
+    
+    showDifficultyScreen() {
+        this.startScreen.classList.add('hidden');
+        this.difficultyScreen.classList.remove('hidden');
+        this.gameOverScreen.classList.add('hidden');
+        
+        // Reset button styles
+        this.easyButton.classList.remove('selected');
+        this.mediumButton.classList.remove('selected');
+        this.hardButton.classList.remove('selected');
+        
+        // Set default description
+        this.updateDifficultyDescription('Medium');
+    }
+    
+    updateDifficultyDescription(difficulty) {
+        switch(difficulty) {
+            case 'Easy':
+                this.difficultyDescription.textContent = 'More lives, slower enemies, higher power-up drop rate. Perfect for beginners.';
+                break;
+            case 'Medium':
+                this.difficultyDescription.textContent = 'Balanced gameplay with standard lives, enemy speed, and power-up drops.';
+                break;
+            case 'Hard':
+                this.difficultyDescription.textContent = 'Fewer lives, faster enemies, lower power-up drop rate. For experienced players.';
+                break;
+        }
+    }
+    
+    selectDifficulty(difficulty) {
+        this.difficulty = difficulty;
+        this.difficultyDisplay.textContent = difficulty;
+        this.startGame();
+    }
+    
     startGame() {
+        console.log("Starting game with difficulty:", this.difficulty);
+        
         // Hide screens
         this.startScreen.classList.add('hidden');
+        this.difficultyScreen.classList.add('hidden');
         this.gameOverScreen.classList.add('hidden');
         
         // Reset game state
         this.isRunning = true;
         this.gameOver = false;
         
-        // Initialize game objects
-        this.player = new Player(this.canvas);
+        // Initialize game objects with difficulty settings
+        this.player = new Player(this.canvas, this.difficulty);
         this.enemies = [];
         this.playerProjectiles = [];
         this.enemyProjectiles = [];
         this.powerUps = [];
-        this.levelManager = new LevelManager(this);
+        this.levelManager = new LevelManager(this, this.difficulty);
+        
+        // Update difficulty display
+        this.difficultyDisplay.textContent = this.difficulty;
+        
+        // Set initial enemy spawn timer
+        this.enemySpawnTimer = this.levelManager.getEnemySpawnRate();
         
         // Start background music
         this.soundManager.startMusic();
         
         // Start game loop
-        this.gameLoop();
-    }
-    
-    showStartScreen() {
-        this.startScreen.classList.remove('hidden');
-        this.gameOverScreen.classList.add('hidden');
+        requestAnimationFrame(() => this.gameLoop());
     }
     
     showGameOverScreen() {
@@ -93,16 +159,19 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Update and draw background
-        this.levelManager.updateStars();
+        this.levelManager.update();
         this.levelManager.drawBackground();
         
         // Update player
         this.player.update();
         
         // Handle player shooting
-        const newProjectile = this.player.shoot();
-        if (newProjectile) {
-            this.playerProjectiles.push(newProjectile);
+        const newProjectiles = this.player.shoot();
+        if (newProjectiles) {
+            // Add all projectiles to the array
+            newProjectiles.forEach(projectile => {
+                this.playerProjectiles.push(projectile);
+            });
             this.soundManager.play('playerShoot');
         }
         
@@ -136,10 +205,13 @@ class Game {
                             this.soundManager.play('bossExplode');
                         }
                         
-                        // Check for power-up drop
-                        const powerUp = enemy.dropPowerUp();
-                        if (powerUp) {
-                            this.powerUps.push(powerUp);
+                        // Check for power-up drop - adjusted by difficulty
+                        let dropChance = 0.2; // Default medium
+                        if (this.difficulty === 'Easy') dropChance = 0.3;
+                        if (this.difficulty === 'Hard') dropChance = 0.1;
+                        
+                        if (Math.random() < dropChance) {
+                            this.spawnPowerUp(enemy.x, enemy.y);
                         }
                         
                         // Check for splitter enemy
@@ -242,8 +314,12 @@ class Game {
                 continue;
             }
             
-            // Enemy shooting
-            if (enemy.shouldShoot()) {
+            // Enemy shooting - adjusted by difficulty
+            let shootChance = enemy.getShootChance();
+            if (this.difficulty === 'Easy') shootChance *= 0.7;
+            if (this.difficulty === 'Hard') shootChance *= 1.3;
+            
+            if (Math.random() < shootChance) {
                 this.enemyProjectiles.push(enemy.shoot());
                 this.soundManager.play('enemyShoot');
             }
@@ -264,8 +340,41 @@ class Game {
     }
     
     spawnEnemy() {
-        const enemyType = this.levelManager.getEnemyType();
-        this.enemies.push(new Enemy(this.canvas, enemyType, this.levelManager.currentLevel));
+        try {
+            console.log("Spawning enemy...");
+            console.log("Enemy class exists:", typeof Enemy !== 'undefined');
+            
+            const enemyType = this.levelManager.getEnemyType();
+            console.log("Enemy type:", enemyType);
+            
+            const newEnemy = new Enemy(this.canvas, enemyType, this.levelManager.currentLevel, this.difficulty);
+            console.log("Enemy created:", newEnemy);
+            
+            this.enemies.push(newEnemy);
+        } catch (error) {
+            console.error("Error spawning enemy:", error);
+        }
+    }
+    
+    spawnPowerUp(x, y) {
+        // Select random power-up type
+        const types = ['shield', 'rapidFire', 'doubleDamage', 'extraLife', 'bomb'];
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        
+        // Adjust extra life probability based on difficulty
+        if (randomType === 'extraLife') {
+            const extraLifeChance = this.difficulty === 'Easy' ? 0.8 : 
+                                   (this.difficulty === 'Medium' ? 0.5 : 0.3);
+            if (Math.random() > extraLifeChance) {
+                // Replace with another power-up
+                const otherTypes = types.filter(type => type !== 'extraLife');
+                const newType = otherTypes[Math.floor(Math.random() * otherTypes.length)];
+                this.powerUps.push(new PowerUp(x, y, newType));
+                return;
+            }
+        }
+        
+        this.powerUps.push(new PowerUp(x, y, randomType));
     }
     
     drawGame() {
