@@ -54,6 +54,7 @@ class Player {
     }
     
     setupControls() {
+        // Keyboard controls
         window.addEventListener('keydown', (e) => {
             switch(e.key) {
                 case 'ArrowUp':
@@ -75,6 +76,47 @@ class Player {
         });
         
         window.addEventListener('keyup', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    this.movingUp = false;
+                    break;
+                case 'ArrowDown':
+                    this.movingDown = false;
+                    break;
+                case 'ArrowLeft':
+                    this.movingLeft = false;
+                    break;
+                case 'ArrowRight':
+                    this.movingRight = false;
+                    break;
+                case ' ':
+                    this.isShooting = false;
+                    break;
+            }
+        });
+        
+        // Add event listeners for touch events on document
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    this.movingUp = true;
+                    break;
+                case 'ArrowDown':
+                    this.movingDown = true;
+                    break;
+                case 'ArrowLeft':
+                    this.movingLeft = true;
+                    break;
+                case 'ArrowRight':
+                    this.movingRight = true;
+                    break;
+                case ' ':
+                    this.isShooting = true;
+                    break;
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
             switch(e.key) {
                 case 'ArrowUp':
                     this.movingUp = false;
@@ -407,7 +449,9 @@ class Player {
     }
     
     shoot() {
-        if (this.isShooting && this.shootCooldown === 0) {
+        // Check if player is shooting and cooldown is ready
+        // Also check for auto-firing mode on mobile
+        if ((this.isShooting || window.autoFiring) && this.shootCooldown === 0) {
             // Adjust cooldown based on rapid fire power-up
             this.shootCooldown = this.hasPowerUp('rapidFire') ? 
                 Math.floor(this.shootCooldownMax / 3) : this.shootCooldownMax;

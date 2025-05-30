@@ -4,6 +4,12 @@
     box-sizing: border-box;
 }
 
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     font-family: 'Courier New', monospace;
     background-color: #121212;
@@ -11,39 +17,52 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
+    position: fixed; /* Prevent scrolling on mobile */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .game-container {
     position: relative;
-    width: 800px;
-    height: 600px;
+    width: 100%;
+    height: 100%;
     border: 2px solid #33ff33;
     box-shadow: 0 0 10px #33ff33;
+    display: flex;
+    flex-direction: column;
 }
 
 .game-header {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
+    padding: 5px;
     background-color: #1a1a1a;
     border-bottom: 1px solid #33ff33;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.game-header > div {
+    margin: 2px 5px;
 }
 
 #gameCanvas {
     background-color: #000;
     width: 100%;
-    height: calc(100% - 80px);
+    flex-grow: 1;
     display: block;
+    touch-action: none; /* Prevent default touch actions */
 }
 
 .game-controls {
-    padding: 5px 10px;
+    padding: 5px;
     text-align: center;
     font-size: 14px;
     background-color: #1a1a1a;
     border-top: 1px solid #33ff33;
+    flex-shrink: 0;
 }
 
 .screen {
@@ -68,6 +87,7 @@ h1 {
     font-size: 48px;
     margin-bottom: 20px;
     text-shadow: 0 0 10px #33ff33;
+    text-align: center;
 }
 
 button {
@@ -82,7 +102,7 @@ button {
     transition: all 0.3s;
 }
 
-button:hover {
+button:hover, button:active {
     background-color: #33ff33;
     color: #000;
     box-shadow: 0 0 15px #33ff33;
@@ -94,6 +114,7 @@ button:hover {
     justify-content: center;
     gap: 20px;
     margin: 20px 0;
+    flex-wrap: wrap;
 }
 
 .difficulty-button {
@@ -118,4 +139,147 @@ button:hover {
     padding: 10px;
     border: 1px solid #33ff33;
     background-color: rgba(51, 255, 51, 0.1);
+}
+
+/* Mobile rotation message */
+#rotationMessage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    color: #33ff33;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    text-align: center;
+    padding: 20px;
+}
+
+#rotationMessage .icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    animation: rotate 2s infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(90deg); }
+    50% { transform: rotate(90deg); }
+    75% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}
+
+#rotationMessage button {
+    margin-top: 30px;
+    background-color: rgba(51, 255, 51, 0.2);
+    padding: 15px 30px;
+    font-size: 20px;
+    z-index: 1001;
+    position: relative;
+}
+
+#rotationMessage button:hover,
+#rotationMessage button:active {
+    background-color: rgba(51, 255, 51, 0.8);
+    color: #000;
+}
+
+/* Touch indicator for mobile */
+.touch-indicator {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #33ff33;
+    background-color: rgba(51, 255, 51, 0.2);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+}
+
+.touch-active {
+    opacity: 0.7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 32px;
+    }
+    
+    .game-header {
+        font-size: 12px;
+        padding: 3px;
+    }
+    
+    .game-container {
+        border-width: 1px;
+    }
+    
+    button {
+        padding: 8px 16px;
+        font-size: 16px;
+    }
+    
+    .difficulty-button {
+        min-width: 90px;
+        padding: 8px 12px;
+    }
+    
+    .difficulty-description {
+        font-size: 14px;
+        max-width: 90%;
+    }
+    
+    .game-controls {
+        padding: 2px 5px;
+        font-size: 12px;
+    }
+}
+
+/* Orientation-specific styles */
+@media (orientation: landscape) and (max-height: 500px) {
+    .game-header {
+        padding: 1px 5px;
+        font-size: 10px;
+    }
+    
+    .game-controls {
+        padding: 1px 5px;
+        font-size: 10px;
+    }
+    
+    h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    button {
+        padding: 5px 10px;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    
+    .difficulty-buttons {
+        gap: 10px;
+        margin: 10px 0;
+    }
+    
+    .difficulty-button {
+        min-width: 80px;
+        padding: 5px 8px;
+    }
+    
+    .difficulty-description {
+        font-size: 12px;
+        max-width: 90%;
+        margin-top: 10px;
+        padding: 5px;
+    }
 }

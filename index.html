@@ -2,9 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Space Impact</title>
     <link rel="stylesheet" href="css/style.css">
+    <script>
+        // Simple function to handle rotation message dismissal
+        function dismissRotationMessage() {
+            document.getElementById('rotationMessage').style.display = 'none';
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+        
+        // Check if device is mobile
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // Handle orientation changes
+        function handleOrientationChange() {
+            if (isMobileDevice()) {
+                // Force canvas resize if game exists
+                if (window.game && window.game.resizeCanvas) {
+                    setTimeout(function() {
+                        window.game.resizeCanvas();
+                    }, 300); // Small delay to allow layout to settle
+                }
+            }
+        }
+        
+        // Show rotation message only on mobile in portrait mode
+        document.addEventListener('DOMContentLoaded', function() {
+            const rotationMessage = document.getElementById('rotationMessage');
+            const startScreen = document.getElementById('startScreen');
+            
+            // Always hide rotation message by default
+            rotationMessage.style.display = 'none';
+            
+            // Only show rotation message on mobile in portrait mode
+            if (isMobileDevice() && window.innerHeight > window.innerWidth) {
+                rotationMessage.style.display = 'flex';
+                startScreen.classList.add('hidden');
+            } else {
+                startScreen.classList.remove('hidden');
+            }
+            
+            // Set up orientation change handler
+            window.addEventListener('resize', handleOrientationChange);
+            window.addEventListener('orientationchange', handleOrientationChange);
+            handleOrientationChange();
+            
+            // Set auto-firing flag for mobile
+            if (isMobileDevice()) {
+                window.autoFiring = true;
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="game-container">
@@ -16,8 +67,16 @@
         </div>
         <canvas id="gameCanvas"></canvas>
         <div class="game-controls">
-            <p>Controls: Arrow keys to move, Space to shoot</p>
+            <p id="controlsText">Controls: Arrow keys to move, Space to shoot</p>
         </div>
+    </div>
+    
+    <!-- Rotation message for mobile devices -->
+    <div id="rotationMessage">
+        <div class="icon">⟳</div>
+        <h2>Please Rotate Your Device</h2>
+        <p>For the best experience, please rotate your device to landscape mode.</p>
+        <button onclick="dismissRotationMessage()">Continue</button>
     </div>
     
     <div id="startScreen" class="screen">
@@ -52,5 +111,18 @@
     <script src="js/player.js"></script>
     <script src="js/levels.js"></script>
     <script src="js/game.js"></script>
+    <script src="js/touch-handler.js"></script>
+    
+    <script>
+        // Store game instance globally for orientation changes
+        document.addEventListener('DOMContentLoaded', function() {
+            window.game = new Game();
+            
+            // Update controls text for mobile
+            if (isMobileDevice()) {
+                document.getElementById('controlsText').textContent = 'Touch and drag to move, auto-firing enabled';
+            }
+        });
+    </script>
 </body>
 </html>

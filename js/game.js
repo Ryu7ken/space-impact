@@ -11,6 +11,7 @@ class Game {
         this.isRunning = false;
         this.gameOver = false;
         this.difficulty = 'Medium'; // Default difficulty
+        this.isMobile = this.checkIfMobile();
         
         // Game objects
         this.player = null;
@@ -28,6 +29,7 @@ class Game {
         this.startScreen = document.getElementById('startScreen');
         this.difficultyScreen = document.getElementById('difficultyScreen');
         this.gameOverScreen = document.getElementById('gameOverScreen');
+        this.rotationMessage = document.getElementById('rotationMessage');
         this.startButton = document.getElementById('startButton');
         this.easyButton = document.getElementById('easyButton');
         this.mediumButton = document.getElementById('mediumButton');
@@ -43,8 +45,11 @@ class Game {
         // Event listeners
         this.setupEventListeners();
         
-        // Initial setup
-        this.showStartScreen();
+        // Initial setup - don't call showStartScreen here, it's handled by mobile-controls.js
+    }
+    
+    checkIfMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
     
     setupEventListeners() {
@@ -61,17 +66,50 @@ class Game {
         this.easyButton.addEventListener('mouseover', () => this.updateDifficultyDescription('Easy'));
         this.mediumButton.addEventListener('mouseover', () => this.updateDifficultyDescription('Medium'));
         this.hardButton.addEventListener('mouseover', () => this.updateDifficultyDescription('Hard'));
+        
+        // Touch events for mobile
+        if (this.isMobile) {
+            this.easyButton.addEventListener('touchstart', () => this.updateDifficultyDescription('Easy'));
+            this.mediumButton.addEventListener('touchstart', () => this.updateDifficultyDescription('Medium'));
+            this.hardButton.addEventListener('touchstart', () => this.updateDifficultyDescription('Hard'));
+        }
     }
     
     resizeCanvas() {
-        this.canvas.width = this.canvas.parentElement.clientWidth;
-        this.canvas.height = this.canvas.parentElement.clientHeight - 80; // Account for header and controls
+        // Get the container dimensions
+        const container = this.canvas.parentElement;
+        const header = document.querySelector('.game-header');
+        const controls = document.querySelector('.game-controls');
+        
+        // Calculate available height
+        const headerHeight = header ? header.offsetHeight : 0;
+        const controlsHeight = controls ? controls.offsetHeight : 0;
+        const availableHeight = container.clientHeight - headerHeight - controlsHeight;
+        
+        // Set canvas size to fill the container
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = availableHeight;
+        
+        console.log("Canvas resized to:", this.canvas.width, "x", this.canvas.height);
+        console.log("Container size:", container.clientWidth, "x", container.clientHeight);
+        console.log("Header height:", headerHeight, "Controls height:", controlsHeight);
+        
+        // If we're in the middle of a game, redraw everything
+        if (this.isRunning && this.player) {
+            // Ensure player stays in bounds after resize
+            this.player.y = Math.min(this.player.y, this.canvas.height - this.player.height);
+            
+            // Redraw the game
+            this.drawGame();
+        }
     }
     
     showStartScreen() {
+        // Simply show the start screen and hide others
         this.startScreen.classList.remove('hidden');
         this.difficultyScreen.classList.add('hidden');
         this.gameOverScreen.classList.add('hidden');
+        this.rotationMessage.classList.add('hidden');
     }
     
     showDifficultyScreen() {
@@ -116,6 +154,12 @@ class Game {
         this.difficultyScreen.classList.add('hidden');
         this.gameOverScreen.classList.add('hidden');
         
+        // Hide rotation message if visible
+        const rotationMessage = document.getElementById('rotationMessage');
+        if (rotationMessage) {
+            rotationMessage.style.display = 'none';
+        }
+        
         // Reset game state
         this.isRunning = true;
         this.gameOver = false;
@@ -137,8 +181,24 @@ class Game {
         // Start background music
         this.soundManager.startMusic();
         
+        // Make sure canvas is properly sized
+        this.resizeCanvas();
+        
         // Start game loop
         requestAnimationFrame(() => this.gameLoop());
+        
+        // Enable auto-firing on mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            // Set auto-firing flag
+            window.autoFiring = true;
+            
+            // Update controls text
+            const controlsText = document.getElementById('controlsText');
+            if (controlsText) {
+                controlsText.textContent = 'Touch and drag to move, auto-firing enabled';
+            }
+        }
     }
     
     showGameOverScreen() {
