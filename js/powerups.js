@@ -339,7 +339,7 @@ class PowerUp {
                 // Re-add bosses to the enemies array
                 if (bosses.length > 0) {
                     game.enemies = bosses;
-                    console.log("Bomb used: Boss is immune to bomb effect");
+                    // Boss is immune to bomb effect
                 }
                 
                 game.soundManager.play('explosion');

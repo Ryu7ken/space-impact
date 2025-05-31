@@ -690,11 +690,11 @@ class LevelManager {
         }
         
         this.enemiesDefeated++;
-        console.log(`Enemy defeated: ${this.enemiesDefeated}/${this.enemiesForNextLevel}`);
+        // Enemy defeated: ${this.enemiesDefeated}/${this.enemiesForNextLevel}
         
         // Check if it's time to spawn a boss
         if (this.enemiesDefeated >= this.enemiesForNextLevel && !this.bossSpawned && !this.levelTransitionInProgress) {
-            console.log("Spawning boss!");
+            // Spawning boss!
             this.spawnBoss();
             this.bossSpawned = true;
             
@@ -708,11 +708,11 @@ class LevelManager {
     bossDestroyed() {
         // Prevent multiple calls
         if (this.levelTransitionInProgress) {
-            console.log("Level transition already in progress, ignoring duplicate call");
+            // Level transition already in progress, ignoring duplicate call
             return;
         }
         
-        console.log("Boss destroyed! Preparing level transition...");
+        // Boss destroyed! Preparing level transition...
         this.bossDefeated = true;
         this.levelTransitionInProgress = true;
         
@@ -763,7 +763,6 @@ class LevelManager {
         
         // Store player's current damage before level transition
         const currentDamage = this.game.player.projectileDamage;
-        console.log("Storing damage before transition:", currentDamage);
         
         // Fade in
         setTimeout(() => {
@@ -775,14 +774,14 @@ class LevelManager {
         setTimeout(() => {
             // Advance to next level
             this.advanceLevel();
-            console.log("Level advanced to:", this.currentLevel);
+            // Level advanced to: ${this.currentLevel}
             
             // Update level text
             levelText.textContent = `LEVEL ${this.currentLevel}`;
             
             // Double-check damage preservation
             if (this.game.player.projectileDamage !== currentDamage) {
-                console.log("Damage was not preserved, restoring:", currentDamage);
+                // Damage was not preserved, restoring
                 this.game.player.projectileDamage = currentDamage;
             }
         }, 1000);
@@ -804,7 +803,7 @@ class LevelManager {
         const gameInstance = this.game;
         
         this.currentLevel++;
-        console.log("Advancing to level:", this.currentLevel);
+        // Advancing to level: ${this.currentLevel}
         
         if (gameInstance && gameInstance.player) {
             // Store the current lives, score, and damage before updating level
@@ -812,8 +811,6 @@ class LevelManager {
             const currentScore = gameInstance.player.score;
             const currentDamage = gameInstance.player.projectileDamage;
             const currentPowerUps = {...gameInstance.player.activePowerUps};
-            
-            console.log("Before level advancement - Damage:", currentDamage, "PowerUps:", currentPowerUps);
             
             // Update player level
             gameInstance.player.level = this.currentLevel;
@@ -835,8 +832,6 @@ class LevelManager {
             // Make player temporarily invulnerable during level transition
             gameInstance.player.isInvulnerable = true;
             gameInstance.player.invulnerabilityTime = 180; // 3 seconds at 60fps
-            
-            console.log(`Player stats after level advancement: Lives=${gameInstance.player.lives}, Score=${gameInstance.player.score}, Damage=${gameInstance.player.projectileDamage}`);
             
             // Update UI immediately
             document.getElementById('lives').textContent = gameInstance.player.lives;
@@ -860,7 +855,7 @@ class LevelManager {
             this.enemiesForNextLevel = 25 + this.currentLevel * levelMultiplier;
         }
         
-        console.log("Enemies needed for next level:", this.enemiesForNextLevel);
+        // Enemies needed for next level: ${this.enemiesForNextLevel}
         
         this.bossDefeated = false;
         this.bossSpawned = false;
@@ -871,10 +866,9 @@ class LevelManager {
     }
     
     spawnBoss() {
-        console.log("Creating boss enemy for level", this.currentLevel);
+        // Creating boss enemy for level
         // Create boss with appropriate difficulty
         const boss = new Enemy(this.game.canvas, 'boss', this.currentLevel, this.difficulty);
-        console.log("Boss created:", boss);
         this.game.enemies.push(boss);
     }
     

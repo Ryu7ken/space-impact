@@ -501,9 +501,9 @@ class Enemy {
     hit(damage) {
         this.health -= damage;
         
-        // Log when boss is about to be destroyed
+        // Check if boss is about to be destroyed
         if (this.type === 'boss' && this.health <= 0) {
-            console.log("Boss health reduced to zero or below:", this.health);
+            // Boss health reduced to zero or below
         }
         
         return this.health <= 0;

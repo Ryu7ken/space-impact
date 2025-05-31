@@ -19,7 +19,7 @@ window.addEventListener('load', function() {
 });
 
 function setupDirectTouchControls() {
-    console.log("Setting up direct touch controls for mobile");
+    // Setting up direct touch controls for mobile
     
     const gameCanvas = document.getElementById('gameCanvas');
     if (!gameCanvas) {
@@ -72,5 +72,5 @@ function setupDirectTouchControls() {
         }
     }, 50);
     
-    console.log("Mobile touch controls setup complete");
+    // Mobile touch controls setup complete
 }

@@ -5,7 +5,7 @@ class Game {
     constructor() {
         // Singleton pattern - ensure only one game instance exists
         if (gameInstance) {
-            console.log("Game instance already exists, cleaning up old instance");
+            // Game instance already exists, cleaning up old instance
             gameInstance.cleanup();
         }
         
@@ -73,13 +73,11 @@ class Game {
         
         // Event listeners
         this.setupEventListeners();
-        
-        console.log("New game instance created");
     }
     
     // Clean up resources when a new game instance is created
     cleanup() {
-        console.log("Cleaning up game instance");
+        // Cleaning up game instance
         
         // Stop the game loop
         this.isRunning = false;
@@ -130,8 +128,6 @@ class Game {
         this.playerProjectiles = [];
         this.enemyProjectiles = [];
         this.powerUps = [];
-        
-        console.log("Game instance cleanup complete");
     }
     
     checkIfMobile() {
@@ -175,8 +171,6 @@ class Game {
         // Set canvas size to fill the container
         this.canvas.width = container.clientWidth;
         this.canvas.height = availableHeight;
-        
-        console.log("Canvas resized to:", this.canvas.width, "x", this.canvas.height);
         
         // If we're in the middle of a game, redraw everything
         if (this.isRunning && this.player) {
@@ -235,7 +229,7 @@ class Game {
     }
     
     startGame() {
-        console.log("Starting game with difficulty:", this.difficulty);
+        // Starting game with selected difficulty
         
         // Cancel any existing animation frame
         if (this.animationFrameId) {
@@ -291,13 +285,13 @@ class Game {
     showGameOverScreen() {
         // Prevent multiple game over triggers
         if (this.gameOverTriggered) {
-            console.log("Game over already triggered, ignoring duplicate call");
+            // Game over already triggered, ignoring duplicate call
             return;
         }
         
         // Double-check that player is actually out of lives
         if (this.player && this.player.lives > 0) {
-            console.log("Prevented false game over - player still has lives:", this.player.lives);
+            // Prevented false game over - player still has lives
             return; // Don't show game over if player still has lives
         }
         
@@ -307,11 +301,6 @@ class Game {
         // Stop the game
         this.gameOver = true;
         this.isRunning = false;
-        
-        console.log("Game Over Screen shown");
-        console.log("Player lives:", this.player ? this.player.lives : "unknown");
-        console.log("Player score:", this.player ? this.player.score : "unknown");
-        console.log("Current level:", this.levelManager ? this.levelManager.currentLevel : "unknown");
         
         // Cancel any pending animation frames to prevent multiple game loops
         if (this.animationFrameId) {
@@ -369,7 +358,7 @@ class Game {
     gameLoop() {
         // Don't continue if game is over or not running
         if (!this.isRunning || this.gameOver) {
-            console.log("Game loop stopped - game is over or not running");
+            // Game loop stopped - game is over or not running
             return;
         }
 
@@ -424,7 +413,7 @@ class Game {
                                 
                                 // Check if it was a boss
                                 if (enemy.type === 'boss') {
-                                    console.log("Boss killed! Calling bossDestroyed()");
+                                    // Boss killed! Calling bossDestroyed()
                                     // Don't remove the boss yet - let the level transition happen first
                                     this.levelManager.bossDestroyed();
                                     this.soundManager.play('bossExplode');
@@ -479,11 +468,11 @@ class Game {
                         if (isGameOver && !this.gameOverTriggered) {
                             // Double-check lives to prevent false game over
                             if (this.player.lives <= 0) {
-                                console.log("Game over triggered by enemy projectile hit");
+                                // Game over triggered by enemy projectile hit
                                 this.showGameOverScreen();
                                 return;
                             } else {
-                                console.log("Prevented false game over - player still has lives:", this.player.lives);
+                                // Prevented false game over - player still has lives
                             }
                         } else {
                             // Player was hit but not killed
@@ -523,11 +512,11 @@ class Game {
                         if (isGameOver && !this.gameOverTriggered) {
                             // Double-check lives to prevent false game over
                             if (this.player.lives <= 0) {
-                                console.log("Game over triggered by enemy collision");
+                                // Game over triggered by enemy collision
                                 this.showGameOverScreen();
                                 return;
                             } else {
-                                console.log("Prevented false game over - player still has lives:", this.player.lives);
+                                // Prevented false game over - player still has lives
                             }
                         } else {
                             // Player was hit but not killed
@@ -593,7 +582,7 @@ class Game {
             if (this.isRunning && !this.gameOver) {
                 this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
             } else {
-                console.log("Game loop ended - game is no longer running or is over");
+                // Game loop ended - game is no longer running or is over
             }
         } catch (error) {
             console.error("Error in game loop:", error);
@@ -607,14 +596,13 @@ class Game {
         try {
             // Don't spawn regular enemies if boss is active
             if (this.levelManager.bossSpawned) {
-                console.log("Boss is active, skipping regular enemy spawn");
+                // Boss is active, skipping regular enemy spawn
                 return;
             }
             
-            console.log("Spawning enemy...");
+            // Spawning enemy...
             
             const enemyType = this.levelManager.getEnemyType();
-            console.log("Enemy type:", enemyType);
             
             const newEnemy = new Enemy(this.canvas, enemyType, this.levelManager.currentLevel, this.difficulty);
             
@@ -631,7 +619,7 @@ class Game {
         
         // Don't spawn bomb power-up if boss is active
         if (randomType === 'bomb' && this.levelManager.bossSpawned) {
-            console.log("Boss active, replacing bomb power-up with another type");
+            // Boss active, replacing bomb power-up with another type
             const otherTypes = types.filter(type => type !== 'bomb');
             randomType = otherTypes[Math.floor(Math.random() * otherTypes.length)];
         }

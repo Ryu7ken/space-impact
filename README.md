@@ -11,12 +11,7 @@ A recreation of the classic Nokia Space Impact game for web browsers developed u
 - Level progression system with increasing difficulty
 
 ### Enhanced Features
-1. **Sound Effects & Music**
-   - Background music similar to the original game
-   - Sound effects for shooting, explosions, power-ups, etc.
-   - Mute button to toggle sound on/off
-
-2. **Power-Up System**
+1. **Power-Up System**
    - Shield: Temporary invulnerability
    - Rapid Fire: Increased shooting speed
    - Double Damage: Projectiles deal double damage
@@ -110,22 +105,6 @@ The game offers three difficulty levels:
 - **Easy**: More lives, slower enemies, higher power-up drop rate
 - **Medium**: Balanced gameplay with standard lives, enemy speed, and power-up drops
 - **Hard**: Fewer lives, faster enemies, lower power-up drop rate
-
-## Sound Files
-
-The game requires the following sound files in the `assets/sounds` directory:
-- player_shoot.mp3
-- enemy_shoot.mp3
-- explosion.mp3
-- player_hit.mp3
-- power_up.mp3
-- boss_appear.mp3
-- boss_explode.mp3
-- level_up.mp3
-- game_over.mp3
-- background_music.mp3
-
-For the best experience, use sound files that match the retro style of the original Nokia game.
 
 ## Browser Compatibility
 

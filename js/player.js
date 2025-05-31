@@ -471,13 +471,13 @@ class Player {
     hit() {
         // Don't process hits if game is over
         if (window.game && window.game.gameOver) {
-            console.log("Hit ignored - game is already over");
+            // Hit ignored - game is already over
             return false;
         }
         
         // Shield absorbs the hit
         if (this.hasPowerUp('shield')) {
-            console.log("Hit absorbed by shield");
+            // Hit absorbed by shield
             return false;
         }
         
@@ -489,7 +489,7 @@ class Player {
             }
             
             this.lives = Math.max(0, this.lives - 1); // Ensure lives doesn't go below 0
-            console.log(`Player hit! Lives remaining: ${this.lives}`);
+            // Player hit! Lives remaining: ${this.lives}
             
             // Make player invulnerable after hit
             this.isInvulnerable = true;
@@ -500,7 +500,7 @@ class Player {
             
             // Only return true (game over) if lives are actually 0
             if (this.lives <= 0) {
-                console.log("Player out of lives - Game Over");
+                // Player out of lives - Game Over
                 return true;
             }
             return false;

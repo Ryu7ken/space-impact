@@ -13,7 +13,7 @@ window.addEventListener('load', function() {
 });
 
 function setupMobileControls() {
-    console.log("Setting up simplified mobile touch controls");
+    // Setting up simplified mobile touch controls
     
     const gameCanvas = document.getElementById('gameCanvas');
     if (!gameCanvas) {
