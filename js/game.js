@@ -362,17 +362,8 @@ class Game {
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw "GAME OVER" text
-        this.ctx.fillStyle = '#ff0000';
-        this.ctx.font = '48px "Courier New", monospace';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2);
-        
-        // Draw score
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '24px "Courier New", monospace';
-        this.ctx.fillText(`Score: ${this.player.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
+        // We're not drawing the Game Over text or score here anymore
+        // as we're using the HTML game over screen instead
     }
     
     gameLoop() {
