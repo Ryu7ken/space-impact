@@ -1,6 +1,6 @@
 # Space Impact Web Game
 
-A recreation of the classic Nokia Space Impact game for web browsers.
+A recreation of the classic Nokia Space Impact game for web browsers developed using Amazon Q.
 
 ## Features
 
@@ -159,4 +159,4 @@ If you encounter any issues:
 
 ## Credits
 
-This game is a fan recreation of the classic Nokia Space Impact game that was pre-loaded on Nokia phones like the 3310.
+This game is a recreation of the classic Space Impact game that was pre-loaded on Nokia phones like the Nokia 2100 or 3310.
