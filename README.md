@@ -28,6 +28,18 @@ A recreation of the classic Nokia Space Impact game for web browsers.
    - Splitter: Splits into smaller enemies when destroyed
    - Bomber: Drops bombs that fall vertically
 
+4. **Dynamic Environments**
+   - Unique themed backgrounds for each level
+   - Visual effects like nebulas, stars, and planets
+   - Special environments including asteroid fields and black holes
+   - Parallax scrolling for depth perception
+
+5. **Mobile Support**
+   - Touch controls for mobile devices
+   - Responsive design that adapts to screen size
+   - Landscape orientation detection for optimal gameplay
+   - Auto-firing on mobile for easier control
+
 ## Docker Installation
 
 ### Prerequisites
@@ -80,10 +92,24 @@ If you prefer to run the Docker commands manually:
 
 ## How to Play
 
+### Desktop Controls
 1. Use arrow keys to move your ship
 2. Press spacebar to shoot
 3. Collect power-ups to enhance your ship
 4. Defeat all enemies and the boss to advance to the next level
+
+### Mobile Controls
+1. Touch and drag to move your ship
+2. Auto-firing is enabled by default
+3. Rotate to landscape mode for the best experience
+4. Use the "Continue" button if prompted to rotate your device
+
+## Difficulty Levels
+
+The game offers three difficulty levels:
+- **Easy**: More lives, slower enemies, higher power-up drop rate
+- **Medium**: Balanced gameplay with standard lives, enemy speed, and power-up drops
+- **Hard**: Fewer lives, faster enemies, lower power-up drop rate
 
 ## Sound Files
 
@@ -103,11 +129,13 @@ For the best experience, use sound files that match the retro style of the origi
 
 ## Browser Compatibility
 
-This game is designed for desktop browsers and has been tested on:
+This game is designed for both desktop and mobile browsers and has been tested on:
 - Chrome
 - Firefox
 - Edge
 - Safari
+- Mobile Chrome (Android)
+- Mobile Safari (iOS)
 
 ## Development
 
@@ -120,6 +148,14 @@ To modify the game:
    docker build -t space-impact .
    ```
 3. Restart the container with the new image
+
+## Troubleshooting
+
+If you encounter any issues:
+- Make sure your browser supports HTML5 Canvas
+- Check that JavaScript is enabled
+- For mobile devices, ensure you're in landscape orientation
+- If the game canvas appears blank, try refreshing the page
 
 ## Credits
 
