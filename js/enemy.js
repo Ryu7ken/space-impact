@@ -213,156 +213,269 @@ class Enemy {
         
         switch(this.type) {
             case 'small':
-                // Small enemy - simple triangular ship
+                // Small enemy - sleek dart-like ship
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
-                this.ctx.lineTo(this.x, this.y);
-                this.ctx.lineTo(this.x, this.y + this.height);
+                this.ctx.lineTo(this.x + this.width * 0.3, this.y);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.3);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.7);
+                this.ctx.lineTo(this.x + this.width * 0.3, this.y + this.height);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Simple details
-                this.ctx.fillStyle = '#aa0000';
-                this.ctx.fillRect(this.x + 5, this.y + this.height/2 - 3, 5, 6);
+                // Engine glow
+                this.ctx.fillStyle = '#ffaa00';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x, this.y + this.height * 0.4);
+                this.ctx.lineTo(this.x - 5, this.y + this.height / 2);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.6);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Cockpit
+                this.ctx.fillStyle = '#66ccff';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.7, this.y + this.height / 2, this.height * 0.2, 0, Math.PI * 2);
+                this.ctx.fill();
                 break;
                 
             case 'medium':
-                // Medium enemy - simple rectangular ship
-                this.ctx.fillRect(this.x + 5, this.y + 5, this.width - 10, this.height - 10);
-                
-                // Front point
+                // Medium enemy - angular fighter
+                // Main body
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
-                this.ctx.lineTo(this.x + this.width - 10, this.y + 5);
-                this.ctx.lineTo(this.x + this.width - 10, this.y + this.height - 5);
+                this.ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.2);
+                this.ctx.lineTo(this.x + this.width * 0.3, this.y);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.3);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.7);
+                this.ctx.lineTo(this.x + this.width * 0.3, this.y + this.height);
+                this.ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.8);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Simple details
+                // Wing details
                 this.ctx.fillStyle = '#aa5500';
-                this.ctx.fillRect(this.x + 10, this.y + this.height/2 - 3, 8, 6);
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + this.width * 0.5, this.y + this.height * 0.2);
+                this.ctx.lineTo(this.x + this.width * 0.3, this.y);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.2);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + this.width * 0.5, this.y + this.height * 0.8);
+                this.ctx.lineTo(this.x + this.width * 0.3, this.y + this.height);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.8);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Cockpit
+                this.ctx.fillStyle = '#66ccff';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.7, this.y + this.height / 2, this.height * 0.15, 0, Math.PI * 2);
+                this.ctx.fill();
                 break;
                 
             case 'large':
-                // Large enemy - simple bulky ship
-                this.ctx.fillRect(this.x + 10, this.y + 5, this.width - 20, this.height - 10);
-                
-                // Front section
+                // Large enemy - heavy cruiser with distinctive shape
+                // Main hull
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
-                this.ctx.lineTo(this.x + this.width - 15, this.y + 5);
-                this.ctx.lineTo(this.x + this.width - 15, this.y + this.height - 5);
+                this.ctx.moveTo(this.x + this.width * 0.9, this.y + this.height * 0.3);
+                this.ctx.lineTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width * 0.9, this.y + this.height * 0.7);
+                this.ctx.lineTo(this.x + this.width * 0.6, this.y + this.height * 0.9);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.9);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.7);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.3);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.1);
+                this.ctx.lineTo(this.x + this.width * 0.6, this.y + this.height * 0.1);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Simple details
+                // Engine glow
+                this.ctx.fillStyle = '#ff3300';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.1, this.y + this.height * 0.3, this.height * 0.1, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.1, this.y + this.height * 0.7, this.height * 0.1, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Command center
+                this.ctx.fillStyle = '#66ccff';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.7, this.y + this.height / 2, this.height * 0.2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Armor plates
                 this.ctx.fillStyle = '#aa0066';
-                this.ctx.fillRect(this.x + 20, this.y + this.height/2 - 5, 10, 10);
+                this.ctx.fillRect(this.x + this.width * 0.3, this.y + this.height * 0.3, this.width * 0.3, this.height * 0.4);
                 break;
                 
             case 'teleporter':
-                // Teleporter - simple circular ship
+                // Teleporter - futuristic saucer with energy field
+                // Outer ring
                 this.ctx.beginPath();
                 this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
                 this.ctx.fill();
                 
-                // Inner details
-                this.ctx.fillStyle = '#000';
+                // Inner ring
+                this.ctx.fillStyle = '#000033';
                 this.ctx.beginPath();
                 this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 3, 0, Math.PI * 2);
                 this.ctx.fill();
                 
-                // Center core
-                this.ctx.fillStyle = this.color;
+                // Energy field effect (pulsing core)
+                this.ctx.fillStyle = '#ffffff';
                 this.ctx.beginPath();
                 this.ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 6, 0, Math.PI * 2);
                 this.ctx.fill();
+                
+                // Teleport energy beams
+                this.ctx.strokeStyle = this.color;
+                this.ctx.lineWidth = 2;
+                for (let i = 0; i < 4; i++) {
+                    const angle = (Math.PI / 2) * i + (this.teleportCooldown * 0.02);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(
+                        this.x + this.width / 2 + Math.cos(angle) * (this.width / 6),
+                        this.y + this.height / 2 + Math.sin(angle) * (this.width / 6)
+                    );
+                    this.ctx.lineTo(
+                        this.x + this.width / 2 + Math.cos(angle) * (this.width / 2),
+                        this.y + this.height / 2 + Math.sin(angle) * (this.width / 2)
+                    );
+                    this.ctx.stroke();
+                }
                 break;
                 
             case 'splitter':
-                // Splitter - simple octagonal ship
+                // Splitter - cell-like structure with visible split line
+                // Main body (hexagonal)
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + 10, this.y);
-                this.ctx.lineTo(this.x + this.width - 10, this.y);
-                this.ctx.lineTo(this.x + this.width, this.y + 10);
-                this.ctx.lineTo(this.x + this.width, this.y + this.height - 10);
-                this.ctx.lineTo(this.x + this.width - 10, this.y + this.height);
-                this.ctx.lineTo(this.x + 10, this.y + this.height);
-                this.ctx.lineTo(this.x, this.y + this.height - 10);
-                this.ctx.lineTo(this.x, this.y + 10);
+                const sides = 6;
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+                const radius = this.width / 2 * 0.9;
+                
+                for (let i = 0; i < sides; i++) {
+                    const angle = (Math.PI * 2 / sides) * i;
+                    const x = centerX + radius * Math.cos(angle);
+                    const y = centerY + radius * Math.sin(angle);
+                    
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Simple details
-                this.ctx.fillStyle = '#aaaa00';
+                // Inner nucleus
+                this.ctx.fillStyle = '#ffffaa';
                 this.ctx.beginPath();
-                this.ctx.arc(this.x + this.width/2, this.y + this.height/2, 10, 0, Math.PI * 2);
+                this.ctx.arc(centerX, centerY, radius * 0.4, 0, Math.PI * 2);
                 this.ctx.fill();
                 
                 // Split line
                 this.ctx.strokeStyle = '#000';
-                this.ctx.lineWidth = 2;
+                this.ctx.lineWidth = 3;
+                this.ctx.setLineDash([5, 3]);
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + this.width/2, this.y + 5);
-                this.ctx.lineTo(this.x + this.width/2, this.y + this.height - 5);
+                this.ctx.moveTo(centerX, centerY - radius);
+                this.ctx.lineTo(centerX, centerY + radius);
                 this.ctx.stroke();
+                this.ctx.setLineDash([]);
                 break;
                 
             case 'bomber':
-                // Bomber - simple wide ship
-                this.ctx.fillRect(this.x + 10, this.y + 5, this.width - 20, this.height - 10);
-                
-                // Front section
+                // Bomber - heavy ship with visible bomb bay
+                // Main body
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
-                this.ctx.lineTo(this.x + this.width - 10, this.y + 5);
-                this.ctx.lineTo(this.x + this.width - 10, this.y + this.height - 5);
+                this.ctx.moveTo(this.x + this.width * 0.8, this.y + this.height * 0.2);
+                this.ctx.lineTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width * 0.8, this.y + this.height * 0.8);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.8);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.6);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.4);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.2);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Bombs
+                // Bomb bay doors
+                this.ctx.fillStyle = '#333333';
+                this.ctx.fillRect(this.x + this.width * 0.3, this.y + this.height * 0.6, this.width * 0.4, this.height * 0.2);
+                
+                // Bombs visible in bay
                 this.ctx.fillStyle = '#ffff00';
                 this.ctx.beginPath();
-                this.ctx.arc(this.x + 15, this.y + this.height + 3, 3, 0, Math.PI * 2);
+                this.ctx.arc(this.x + this.width * 0.4, this.y + this.height * 0.7, this.height * 0.1, 0, Math.PI * 2);
                 this.ctx.fill();
                 
                 this.ctx.beginPath();
-                this.ctx.arc(this.x + 30, this.y + this.height + 3, 3, 0, Math.PI * 2);
+                this.ctx.arc(this.x + this.width * 0.6, this.y + this.height * 0.7, this.height * 0.1, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Cockpit
+                this.ctx.fillStyle = '#66ccff';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.7, this.y + this.height * 0.3, this.height * 0.15, 0, Math.PI * 2);
                 this.ctx.fill();
                 break;
                 
             case 'boss':
-                // Boss - simplified large ship
+                // Boss - imposing battleship with multiple weapon systems
                 // Main hull
-                this.ctx.fillRect(this.x + 20, this.y + 15, this.width - 40, this.height - 30);
-                
-                // Front section
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x + this.width, this.y + this.height / 2);
-                this.ctx.lineTo(this.x + this.width - 20, this.y + 15);
-                this.ctx.lineTo(this.x + this.width - 20, this.y + this.height - 15);
+                this.ctx.moveTo(this.x + this.width * 0.9, this.y + this.height * 0.3);
+                this.ctx.lineTo(this.x + this.width, this.y + this.height / 2);
+                this.ctx.lineTo(this.x + this.width * 0.9, this.y + this.height * 0.7);
+                this.ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.9);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.9);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.7);
+                this.ctx.lineTo(this.x, this.y + this.height * 0.3);
+                this.ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.1);
+                this.ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.1);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Upper and lower hulls
-                this.ctx.fillRect(this.x + 20, this.y, this.width - 40, 15);
-                this.ctx.fillRect(this.x + 20, this.y + this.height - 15, this.width - 40, 15);
-                
-                // Rear section
+                // Upper and lower weapon arrays
+                this.ctx.fillStyle = '#aa00aa';
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.x, this.y + this.height / 2);
-                this.ctx.lineTo(this.x + 20, this.y + 15);
-                this.ctx.lineTo(this.x + 20, this.y + this.height - 15);
+                this.ctx.moveTo(this.x + this.width * 0.6, this.y + this.height * 0.1);
+                this.ctx.lineTo(this.x + this.width * 0.7, this.y);
+                this.ctx.lineTo(this.x + this.width * 0.8, this.y + this.height * 0.1);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x + this.width * 0.6, this.y + this.height * 0.9);
+                this.ctx.lineTo(this.x + this.width * 0.7, this.y + this.height);
+                this.ctx.lineTo(this.x + this.width * 0.8, this.y + this.height * 0.9);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
                 // Command bridge
-                this.ctx.fillStyle = '#ffffff';
-                this.ctx.fillRect(this.x + this.width - 40, this.y + this.height / 2 - 10, 15, 20);
+                this.ctx.fillStyle = '#66ccff';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.7, this.y + this.height / 2, this.height * 0.15, 0, Math.PI * 2);
+                this.ctx.fill();
                 
-                // Weapon systems
+                // Engine glow
+                this.ctx.fillStyle = '#ff3300';
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.1, this.y + this.height * 0.3, this.height * 0.1, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.1, this.y + this.height * 0.7, this.height * 0.1, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Front weapon system
                 this.ctx.fillStyle = '#ff00ff';
-                this.ctx.fillRect(this.x + this.width - 15, this.y + this.height / 2 - 10, 15, 20);
+                this.ctx.beginPath();
+                this.ctx.arc(this.x + this.width * 0.9, this.y + this.height / 2, this.height * 0.1, 0, Math.PI * 2);
+                this.ctx.fill();
                 break;
         }
         

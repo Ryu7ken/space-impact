@@ -5,6 +5,9 @@ class LevelManager {
         this.currentLevel = 1;
         this.enemiesDefeated = 0;
         
+        // Flag to prevent multiple level transitions
+        this.levelTransitionInProgress = false;
+        
         // Adjust enemies needed for next level based on difficulty
         if (difficulty === 'Easy') {
             this.enemiesForNextLevel = 15;
@@ -263,8 +266,11 @@ class LevelManager {
             );
             ctx.fill();
             
-            // Add subtle detail to nebulas
-            if (Math.random() < 0.05) { // Occasional subtle stars within nebula
+            // Add subtle stars within nebula instead of random circles
+            const numStars = 3;
+            ctx.fillStyle = "#ffffff";
+            
+            for (let i = 0; i < numStars; i++) {
                 const starX = nebula.x + Math.random() * nebula.width;
                 const starY = nebula.y + Math.random() * nebula.height;
                 const distFromCenter = Math.sqrt(
@@ -274,14 +280,14 @@ class LevelManager {
                 
                 // Only draw if within nebula bounds
                 if (distFromCenter < nebula.width/2 * 0.8) {
-                    ctx.fillStyle = "#ffffff";
-                    ctx.globalAlpha = 0.5;
+                    const starSize = Math.random() * 1.5 + 0.5;
+                    ctx.globalAlpha = Math.random() * 0.3 + 0.2;
                     ctx.beginPath();
-                    ctx.arc(starX, starY, 1, 0, Math.PI * 2);
+                    ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.globalAlpha = 1.0;
                 }
             }
+            ctx.globalAlpha = 1.0;
         }
     }
     
@@ -323,7 +329,8 @@ class LevelManager {
             const points = [];
             for (let i = 0; i < asteroid.vertices; i++) {
                 const angle = (Math.PI * 2 / asteroid.vertices) * i;
-                const radius = asteroid.size * (asteroid.irregularity + (1 - asteroid.irregularity) * 0.8 * Math.random());
+                // Use a consistent radius with small variations for a more natural look
+                const radius = asteroid.size * (0.8 + Math.sin(angle * 3) * 0.1 + Math.cos(angle * 2) * 0.1);
                 points.push({
                     x: Math.cos(angle) * radius,
                     y: Math.sin(angle) * radius
@@ -348,13 +355,15 @@ class LevelManager {
             ctx.closePath();
             ctx.fill();
             
-            // Add crater details - fewer and more subtle
-            ctx.fillStyle = shadowColor;
-            const craters = Math.floor(Math.random() * 2) + 1;
+            // Add crater details - more defined and realistic
+            const craters = Math.floor(Math.random() * 2) + 2;
             for (let i = 0; i < craters; i++) {
-                const craterX = (Math.random() - 0.5) * asteroid.size * 0.7;
-                const craterY = (Math.random() - 0.5) * asteroid.size * 0.7;
-                const craterSize = Math.random() * asteroid.size * 0.2 + asteroid.size * 0.05;
+                // Position craters more strategically
+                const angle = (Math.PI * 2 / craters) * i + Math.random() * 0.5;
+                const distance = Math.random() * asteroid.size * 0.5;
+                const craterX = Math.cos(angle) * distance;
+                const craterY = Math.sin(angle) * distance;
+                const craterSize = Math.random() * asteroid.size * 0.15 + asteroid.size * 0.05;
                 
                 // Crater with gradient for 3D effect
                 const craterGradient = ctx.createRadialGradient(
@@ -362,12 +371,20 @@ class LevelManager {
                     craterX, craterY, craterSize
                 );
                 craterGradient.addColorStop(0, shadowColor);
+                craterGradient.addColorStop(0.7, darkenColor(shadowColor, 10));
                 craterGradient.addColorStop(1, baseColor);
                 
                 ctx.fillStyle = craterGradient;
                 ctx.beginPath();
                 ctx.arc(craterX, craterY, craterSize, 0, Math.PI * 2);
                 ctx.fill();
+                
+                // Add crater rim highlight
+                ctx.strokeStyle = lightenColor(baseColor, 10);
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(craterX, craterY, craterSize * 0.8, Math.PI * 0.8, Math.PI * 1.5);
+                ctx.stroke();
             }
             
             ctx.restore();
@@ -425,42 +442,68 @@ class LevelManager {
         
         // Create a consistent pattern of surface features
         ctx.save();
+        ctx.beginPath();
+        ctx.arc(planetX, planetY, planetRadius, 0, Math.PI * 2);
         ctx.clip(); // Clip to planet circle
         
-        // Large surface features
+        // Large surface features - use smooth curves instead of jiggling circles
         for (let i = 0; i < 3; i++) {
             ctx.fillStyle = detailColors[i % detailColors.length];
             
-            // Use bezier curves for natural-looking surface features
+            // Draw smooth continent-like shapes
             ctx.beginPath();
-            const startX = planetX - planetRadius + (i * planetRadius * 0.5);
+            const startX = planetX - planetRadius * 0.8 + (i * planetRadius * 0.4);
             const startY = planetY - planetRadius * 0.3 + (i * planetRadius * 0.3);
             
+            // Create a smooth, flowing shape
             ctx.moveTo(startX, startY);
+            
+            // First curve - top part of continent
             ctx.bezierCurveTo(
-                startX + planetRadius * 0.3, startY + planetRadius * 0.1,
-                startX + planetRadius * 0.6, startY - planetRadius * 0.2,
-                startX + planetRadius * 0.9, startY + planetRadius * 0.1
+                startX + planetRadius * 0.3, startY - planetRadius * 0.2,
+                startX + planetRadius * 0.6, startY - planetRadius * 0.1,
+                startX + planetRadius * 0.9, startY
             );
+            
+            // Second curve - right side
             ctx.bezierCurveTo(
-                startX + planetRadius * 0.6, startY + planetRadius * 0.3,
-                startX + planetRadius * 0.3, startY + planetRadius * 0.4,
-                startX, startY + planetRadius * 0.6
+                startX + planetRadius * 1.0, startY + planetRadius * 0.2,
+                startX + planetRadius * 0.9, startY + planetRadius * 0.4,
+                startX + planetRadius * 0.7, startY + planetRadius * 0.5
             );
+            
+            // Third curve - bottom part
+            ctx.bezierCurveTo(
+                startX + planetRadius * 0.5, startY + planetRadius * 0.6,
+                startX + planetRadius * 0.2, startY + planetRadius * 0.5,
+                startX, startY + planetRadius * 0.3
+            );
+            
+            // Close the shape
             ctx.closePath();
             ctx.fill();
         }
         
-        // Small craters or spots
+        // Add some larger crater features
         ctx.fillStyle = darkenColor(planetColor, 30);
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 5; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * planetRadius * 0.8;
-            const size = Math.random() * planetRadius * 0.08 + planetRadius * 0.02;
+            const distance = Math.random() * planetRadius * 0.7;
+            const size = Math.random() * planetRadius * 0.1 + planetRadius * 0.05;
             
             const x = planetX + Math.cos(angle) * distance;
             const y = planetY + Math.sin(angle) * distance;
             
+            // Draw crater with gradient for 3D effect
+            const craterGradient = ctx.createRadialGradient(
+                x, y, 0,
+                x, y, size
+            );
+            craterGradient.addColorStop(0, darkenColor(planetColor, 20));
+            craterGradient.addColorStop(0.7, darkenColor(planetColor, 40));
+            craterGradient.addColorStop(1, darkenColor(planetColor, 30));
+            
+            ctx.fillStyle = craterGradient;
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
             ctx.fill();
@@ -508,42 +551,63 @@ class LevelManager {
         ctx.arc(holeX, holeY, holeRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // Accretion disk - much slower rotation
+        // Accretion disk - smooth, elegant design
         ctx.save();
         ctx.translate(holeX, holeY);
         ctx.rotate(performance.now() / 10000); // Very slow rotation
         
+        // Create a more realistic accretion disk with multiple color bands
+        const diskColors = [
+            {stop: 0, color: "rgba(255, 100, 0, 0.7)"},
+            {stop: 0.3, color: "rgba(255, 50, 0, 0.5)"},
+            {stop: 0.6, color: "rgba(150, 20, 0, 0.3)"},
+            {stop: 0.9, color: "rgba(100, 0, 0, 0.1)"},
+            {stop: 1, color: "rgba(50, 0, 0, 0)"}
+        ];
+        
+        // Draw the accretion disk as a smooth ellipse
         const diskGradient = ctx.createRadialGradient(0, 0, holeRadius, 0, 0, holeRadius * 1.8);
-        diskGradient.addColorStop(0, "rgba(255, 100, 0, 0.6)");
-        diskGradient.addColorStop(0.5, "rgba(255, 50, 0, 0.3)");
-        diskGradient.addColorStop(0.8, "rgba(150, 20, 0, 0.1)");
-        diskGradient.addColorStop(1, "rgba(100, 0, 0, 0)");
+        diskColors.forEach(color => {
+            diskGradient.addColorStop(color.stop, color.color);
+        });
         
         ctx.fillStyle = diskGradient;
         ctx.beginPath();
         ctx.ellipse(0, 0, holeRadius * 1.8, holeRadius * 0.5, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Add subtle light streaks (gravitational lensing effect)
-        const numStreaks = 6;
-        ctx.strokeStyle = "rgba(255, 150, 50, 0.2)";
-        ctx.lineWidth = 2;
+        // Add light distortion effect (gravitational lensing)
+        ctx.strokeStyle = "rgba(255, 150, 50, 0.15)";
+        ctx.lineWidth = 1.5;
         
-        for (let i = 0; i < numStreaks; i++) {
-            const angle = (Math.PI * 2 / numStreaks) * i;
-            const length = holeRadius * (1.5 + Math.random() * 0.5);
+        // Draw smooth curved light streaks
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i;
+            const length = holeRadius * 2;
             
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            // Curved path for light streak
+            ctx.moveTo(Math.cos(angle) * holeRadius * 1.1, Math.sin(angle) * holeRadius * 1.1);
+            
+            // Create a smooth curve that bends around the black hole
+            const controlAngle = angle + Math.PI * 0.15;
             ctx.quadraticCurveTo(
-                Math.cos(angle + 0.2) * length * 0.5,
-                Math.sin(angle + 0.2) * length * 0.5,
-                Math.cos(angle) * length,
-                Math.sin(angle) * length
+                Math.cos(controlAngle) * holeRadius * 0.8,
+                Math.sin(controlAngle) * holeRadius * 0.8,
+                Math.cos(angle + Math.PI * 0.3) * length,
+                Math.sin(angle + Math.PI * 0.3) * length
             );
             ctx.stroke();
         }
+        
+        // Add subtle glow around the event horizon
+        const glowGradient = ctx.createRadialGradient(0, 0, holeRadius * 0.9, 0, 0, holeRadius * 1.2);
+        glowGradient.addColorStop(0, "rgba(100, 0, 150, 0.2)");
+        glowGradient.addColorStop(1, "rgba(100, 0, 150, 0)");
+        
+        ctx.fillStyle = glowGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, holeRadius * 1.2, 0, Math.PI * 2);
+        ctx.fill();
         
         ctx.restore();
     }
@@ -620,11 +684,16 @@ class LevelManager {
     }
     
     enemyDefeated() {
+        // Don't count enemies if game is over or if this isn't the current game instance
+        if (this.game && (this.game.gameOver || this.game !== window.game)) {
+            return;
+        }
+        
         this.enemiesDefeated++;
         console.log(`Enemy defeated: ${this.enemiesDefeated}/${this.enemiesForNextLevel}`);
         
         // Check if it's time to spawn a boss
-        if (this.enemiesDefeated >= this.enemiesForNextLevel && !this.bossSpawned) {
+        if (this.enemiesDefeated >= this.enemiesForNextLevel && !this.bossSpawned && !this.levelTransitionInProgress) {
             console.log("Spawning boss!");
             this.spawnBoss();
             this.bossSpawned = true;
@@ -637,8 +706,15 @@ class LevelManager {
     }
     
     bossDestroyed() {
+        // Prevent multiple calls
+        if (this.levelTransitionInProgress) {
+            console.log("Level transition already in progress, ignoring duplicate call");
+            return;
+        }
+        
         console.log("Boss destroyed! Preparing level transition...");
         this.bossDefeated = true;
+        this.levelTransitionInProgress = true;
         
         // Play level up sound
         if (this.game.soundManager) {
@@ -647,7 +723,8 @@ class LevelManager {
         
         // Clear all enemies and projectiles to prevent collisions during level transition
         if (this.game) {
-            this.game.enemies = [];
+            // Clear all enemies except the boss (which will be removed after transition)
+            this.game.enemies = this.game.enemies.filter(enemy => enemy.type === 'boss');
             this.game.enemyProjectiles = [];
         }
         
@@ -723,45 +800,52 @@ class LevelManager {
     }
     
     advanceLevel() {
+        // Store the current game instance to ensure we're working with the same one
+        const gameInstance = this.game;
+        
         this.currentLevel++;
         console.log("Advancing to level:", this.currentLevel);
         
-        if (this.game && this.game.player) {
+        if (gameInstance && gameInstance.player) {
             // Store the current lives, score, and damage before updating level
-            const currentLives = this.game.player.lives;
-            const currentScore = this.game.player.score;
-            const currentDamage = this.game.player.projectileDamage;
-            const currentPowerUps = {...this.game.player.activePowerUps};
+            const currentLives = gameInstance.player.lives;
+            const currentScore = gameInstance.player.score;
+            const currentDamage = gameInstance.player.projectileDamage;
+            const currentPowerUps = {...gameInstance.player.activePowerUps};
             
             console.log("Before level advancement - Damage:", currentDamage, "PowerUps:", currentPowerUps);
             
             // Update player level
-            this.game.player.level = this.currentLevel;
+            gameInstance.player.level = this.currentLevel;
             
             // Ensure lives, score, and damage are preserved
             // Make sure lives is a valid number
             if (typeof currentLives !== 'number' || isNaN(currentLives) || currentLives < 0) {
                 console.error("Invalid lives value during level advancement:", currentLives);
-                this.game.player.lives = 1; // Reset to 1 if invalid
+                gameInstance.player.lives = 1; // Reset to 1 if invalid
             } else {
-                this.game.player.lives = Math.max(1, currentLives); // Ensure at least 1 life
+                gameInstance.player.lives = Math.max(1, currentLives); // Ensure at least 1 life
             }
             
-            this.game.player.score = currentScore;
+            gameInstance.player.score = currentScore;
             
             // Preserve damage power-up
-            this.game.player.projectileDamage = currentDamage;
+            gameInstance.player.projectileDamage = currentDamage;
             
             // Make player temporarily invulnerable during level transition
-            this.game.player.isInvulnerable = true;
-            this.game.player.invulnerabilityTime = 180; // 3 seconds at 60fps
+            gameInstance.player.isInvulnerable = true;
+            gameInstance.player.invulnerabilityTime = 180; // 3 seconds at 60fps
             
-            console.log(`Player stats after level advancement: Lives=${this.game.player.lives}, Score=${this.game.player.score}, Damage=${this.game.player.projectileDamage}`);
+            console.log(`Player stats after level advancement: Lives=${gameInstance.player.lives}, Score=${gameInstance.player.score}, Damage=${gameInstance.player.projectileDamage}`);
             
             // Update UI immediately
-            document.getElementById('lives').textContent = this.game.player.lives;
-            document.getElementById('score').textContent = this.game.player.score;
+            document.getElementById('lives').textContent = gameInstance.player.lives;
+            document.getElementById('score').textContent = gameInstance.player.score;
             document.getElementById('level').textContent = this.currentLevel;
+            
+            // Clear any remaining enemies to ensure a clean level start
+            gameInstance.enemies = [];
+            gameInstance.enemyProjectiles = [];
         }
         
         this.enemiesDefeated = 0;
@@ -780,6 +864,7 @@ class LevelManager {
         
         this.bossDefeated = false;
         this.bossSpawned = false;
+        this.levelTransitionInProgress = false;
         
         // Reset asteroids for new level
         this.asteroids = [];

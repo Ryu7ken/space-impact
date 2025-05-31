@@ -128,6 +128,12 @@
     <script>
         // Store game instance globally for orientation changes
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure any existing game instance is cleaned up
+            if (window.game && window.game.cleanup) {
+                window.game.cleanup();
+            }
+            
+            // Create a new game instance
             window.game = new Game();
             
             // Only load touch handler on mobile devices

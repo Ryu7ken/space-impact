@@ -49,92 +49,76 @@ class Player {
             doubleDamage: 0
         };
         
-        // Setup event listeners
+        // Store event handler references so they can be removed later
+        this.keydownHandler = this.handleKeyDown.bind(this);
+        this.keyupHandler = this.handleKeyUp.bind(this);
+        
+        // Setup event listeners - make sure to remove any existing ones first
+        this.removeEventListeners();
         this.setupControls();
     }
     
     setupControls() {
         // Keyboard controls
-        window.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowUp':
-                    this.movingUp = true;
-                    break;
-                case 'ArrowDown':
-                    this.movingDown = true;
-                    break;
-                case 'ArrowLeft':
-                    this.movingLeft = true;
-                    break;
-                case 'ArrowRight':
-                    this.movingRight = true;
-                    break;
-                case ' ':
-                    this.isShooting = true;
-                    break;
-            }
-        });
-        
-        window.addEventListener('keyup', (e) => {
-            switch(e.key) {
-                case 'ArrowUp':
-                    this.movingUp = false;
-                    break;
-                case 'ArrowDown':
-                    this.movingDown = false;
-                    break;
-                case 'ArrowLeft':
-                    this.movingLeft = false;
-                    break;
-                case 'ArrowRight':
-                    this.movingRight = false;
-                    break;
-                case ' ':
-                    this.isShooting = false;
-                    break;
-            }
-        });
+        window.addEventListener('keydown', this.keydownHandler);
+        window.addEventListener('keyup', this.keyupHandler);
         
         // Add event listeners for touch events on document
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowUp':
-                    this.movingUp = true;
-                    break;
-                case 'ArrowDown':
-                    this.movingDown = true;
-                    break;
-                case 'ArrowLeft':
-                    this.movingLeft = true;
-                    break;
-                case 'ArrowRight':
-                    this.movingRight = true;
-                    break;
-                case ' ':
-                    this.isShooting = true;
-                    break;
-            }
-        });
+        document.addEventListener('keydown', this.keydownHandler);
+        document.addEventListener('keyup', this.keyupHandler);
+    }
+    
+    removeEventListeners() {
+        // Remove any existing event listeners to prevent duplicates
+        window.removeEventListener('keydown', this.keydownHandler);
+        window.removeEventListener('keyup', this.keyupHandler);
+        document.removeEventListener('keydown', this.keydownHandler);
+        document.removeEventListener('keyup', this.keyupHandler);
+    }
+    
+    handleKeyDown(e) {
+        // Only process key events if the game is running
+        if (window.game && (window.game.gameOver || !window.game.isRunning)) {
+            return;
+        }
         
-        document.addEventListener('keyup', (e) => {
-            switch(e.key) {
-                case 'ArrowUp':
-                    this.movingUp = false;
-                    break;
-                case 'ArrowDown':
-                    this.movingDown = false;
-                    break;
-                case 'ArrowLeft':
-                    this.movingLeft = false;
-                    break;
-                case 'ArrowRight':
-                    this.movingRight = false;
-                    break;
-                case ' ':
-                    this.isShooting = false;
-                    break;
-            }
-        });
+        switch(e.key) {
+            case 'ArrowUp':
+                this.movingUp = true;
+                break;
+            case 'ArrowDown':
+                this.movingDown = true;
+                break;
+            case 'ArrowLeft':
+                this.movingLeft = true;
+                break;
+            case 'ArrowRight':
+                this.movingRight = true;
+                break;
+            case ' ':
+                this.isShooting = true;
+                break;
+        }
+    }
+    
+    handleKeyUp(e) {
+        switch(e.key) {
+            case 'ArrowUp':
+                this.movingUp = false;
+                break;
+            case 'ArrowDown':
+                this.movingDown = false;
+                break;
+            case 'ArrowLeft':
+                this.movingLeft = false;
+                break;
+            case 'ArrowRight':
+                this.movingRight = false;
+                break;
+            case ' ':
+                this.isShooting = false;
+                break;
+        }
     }
     
     update() {
@@ -485,6 +469,12 @@ class Player {
     }
     
     hit() {
+        // Don't process hits if game is over
+        if (window.game && window.game.gameOver) {
+            console.log("Hit ignored - game is already over");
+            return false;
+        }
+        
         // Shield absorbs the hit
         if (this.hasPowerUp('shield')) {
             console.log("Hit absorbed by shield");
@@ -498,15 +488,17 @@ class Player {
                 this.lives = 1; // Reset to 1 if invalid
             }
             
-            this.lives--;
+            this.lives = Math.max(0, this.lives - 1); // Ensure lives doesn't go below 0
             console.log(`Player hit! Lives remaining: ${this.lives}`);
+            
+            // Make player invulnerable after hit
             this.isInvulnerable = true;
             this.invulnerabilityTime = this.invulnerabilityTimeMax;
             
             // Update UI immediately
             document.getElementById('lives').textContent = this.lives;
             
-            // Only return true (game over) if lives are actually 0 or less
+            // Only return true (game over) if lives are actually 0
             if (this.lives <= 0) {
                 console.log("Player out of lives - Game Over");
                 return true;

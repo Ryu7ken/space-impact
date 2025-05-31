@@ -27,7 +27,7 @@ class PowerUp {
             case 'rapidFire':
                 this.color = '#ff5500';
                 this.secondaryColor = '#cc3300';
-                this.duration = 30 * 60; // 30 seconds at 60fps
+                this.duration = 10 * 60; // 10 seconds at 60fps
                 this.symbol = '🔥';
                 break;
                 
