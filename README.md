@@ -140,4 +140,6 @@ If you encounter any issues:
 
 ## Credits
 
+![Original Space Impact](/assets/Space%20Impact%202.png)
+
 This game is a recreation of the classic Space Impact game that was pre-loaded on Nokia phones like the Nokia 2100 or 3310.
