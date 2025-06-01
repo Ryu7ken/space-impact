@@ -2,6 +2,8 @@
 
 A recreation of the classic Nokia Space Impact game for web browsers developed using Amazon Q.
 
+![Space Impact Gameplay](/assets/Space%20Impact.gif)
+
 ## Features
 
 ### Core Gameplay
